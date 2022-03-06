@@ -44,8 +44,8 @@ class World {
 
             texture.clear(sf::Color::Red);
 
-            for (int i = renderArea.left/TILE_SIZE; i < (renderArea.left + renderArea.width)/TILE_SIZE; i++){
-                for (int j = renderArea.top/TILE_SIZE; j < (renderArea.top + renderArea.height)/TILE_SIZE; j++){
+            for (int i = renderArea.left/TILE_SIZE - TILE_SIZE; i < (renderArea.left + renderArea.width)/TILE_SIZE; i++){
+                for (int j = renderArea.top/TILE_SIZE - TILE_SIZE; j < (renderArea.top + renderArea.height)/TILE_SIZE; j++){
 
                     if (!(i >= width || j >= height || i < 0 || j < 0)){
 
@@ -64,6 +64,22 @@ class World {
             for (int i = 0; i < width; i++){
                 for (int j = 0; j < height; j++){
                     tileMap[i][j] = num;
+                }
+            }
+        };
+
+        void TileMapRoomFillTest(){
+            for (int i = 0; i < width; i++){
+                for (int j = 0; j < height; j++){
+                    if ((i == 0 || i == width - 1) && j != height - 1){
+                        tileMap[i][j] = 1;
+                    }
+                    else if ((i > 0 && i < width - 1) && (j > 0 && j < height - 1)){
+                        tileMap[i][j] = 2;
+                    }
+                    else {
+                        tileMap[i][j] = 0;
+                    }
                 }
             }
         };

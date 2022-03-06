@@ -6,12 +6,14 @@ class TileSet {
     public:
         std::vector<Tile> tiles;
 
+        int variants = 1;
+
         sf::Texture texture;
 
         std::vector<sf::Sprite> sprites;
 
         sf::Sprite GetSprite(int index){
-            return sprites[tiles[index].sprite];
+            return sprites[tiles[index*variants].sprite];
         };
 
         void AddTile(Tile tile){
@@ -30,7 +32,8 @@ class TileSet {
             texture.loadFromFile(path);
         };
 
-        void GenerateSprites(int amount, int variants){
+        void GenerateSprites(int amount, int v){
+            variants = v;
             for (int i = 0; i < amount; i++){
                 for (int j = 0; j < variants; j++){
                     sf::Sprite s(texture, {i * TILE_SIZE, j * TILE_SIZE, TILE_SIZE, TILE_SIZE});

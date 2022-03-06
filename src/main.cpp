@@ -7,35 +7,28 @@
 #include "game/Data/RoomLoadExport.hpp"
 #include "game/Input.hpp"
 #include "game/World/World.hpp"
+#include "game/Content/TileTypes.hpp"
 
 int main()
 {
+    LoadDefaultPallete();
+
     sf::RenderWindow window(sf::VideoMode(1280, 720), "Voluntary Boundary");
 
     window.setFramerateLimit(60);
-
-    TileSet pallete;
-
-    pallete.LoadTexture("assets/wall.png");
-    pallete.GenerateSprites(2, 1);
 
     int movement[2];
     float camera[2] = {0, 0};
     float cameraVelocity[2] = {0, 0};
 
-    Tile tile1;
-    tile1.sprite = 0;
-    tile1.id = 0;
-    tile1.solid = true;
-
-    pallete.AddTile(tile1);
+    sf::Vector2u windowSize;
 
     sf::View view;
     sf::Sprite visibleTiles;
 
     World world;
-    world.InitializeTileMap(100, 100, pallete);
-    world.FillTileMapWith(0);
+    world.InitializeTileMap(100, 100, defaultPallete);
+    world.TileMapRoomFillTest();
 
     while (window.isOpen())
     {
@@ -44,6 +37,9 @@ int main()
         {
             if (event.type == sf::Event::Closed){
                 window.close();
+            }
+            if (event.type == sf::Event::Resized){
+                
             }
         }
 
@@ -60,7 +56,7 @@ int main()
         cameraVelocity[0] -= cameraVelocity[0] * 0.02;
         cameraVelocity[1] -= cameraVelocity[1] * 0.02;
 
-        sf::Vector2u windowSize = window.getSize();
+        windowSize = window.getSize();
 
         view.reset(sf::FloatRect(camera[0], camera[1], windowSize.x, windowSize.y));
         window.setView(view);
