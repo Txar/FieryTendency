@@ -10,14 +10,14 @@ class Entity {
         bool dead = false;
         std::vector<CollisionBox> collisionBoxes;
 
-        void Shoot(Bullet bullet){
+        /*void Shoot(Bullet bullet){
             float Xvelocity = bullet.Xvelocity, Yvelocity = bullet.Yvelocity;
 
             int framesUntilEnergyLoss = bullet.framesUntilEnergyLoss;
             float energyLossEveryFrame = bullet.energyLossEveryFrame;
 
             float contactDamage = bullet.damage;
-        };
+        };*/
 
         void Update(){
             int overall = 0;
@@ -45,6 +45,6 @@ class Entity {
                     
                 };
             };
-            
+            return (Xcollides && Ycollides);
         };
 };

@@ -1,20 +1,22 @@
+#pragma once
+
 bool collisionCheck(float x, float y, int width, int height, float x2, float y2, int width2, int height2){
     bool Xcollides = false;
     bool Ycollides = false;
 
-        for (int i = 0; i != 1; i++){
-		    for (int j = 0; j != 1; j++){
+    for (int i = 0; i != 2; i++){
+	    for (int j = 0; j != 2; j++){
 
-			    if (x2 + width2 * i  >= x && x + width2 * i <= x + width) {
-			        Xcollides = true;
-                };
-
-    		    if (y2 + height2 * j >= y && y2 + height2 * j <= y + height){
-		    		Ycollides = true;
-                };
-
+		    if (x2 + width2 * i  >= x && x + width2 * i <= x + width) {
+		        Xcollides = true;
             };
+
+    		if (y2 + height2 * j >= y && y2 + height2 * j <= y + height){
+				Ycollides = true;
+            };
+
         };
+    };
     return (Xcollides && Ycollides);
 };
 

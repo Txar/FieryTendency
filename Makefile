@@ -1,6 +1,6 @@
 CC=g++
 SRC=main.cpp
-BN=Trainwreck#build name
+BN=VoluntaryBoundary#build name
 CFLAGS=-O3 -Wall -I include/ -L lib/ -l sfml-graphics -l sfml-window -l sfml-system -l sfml-audio
 RemoveCommand=rd /s /q 
 #CopyCommand=copy .\src\sprites\export\* build\$(BN)\assets\
