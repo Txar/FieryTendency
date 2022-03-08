@@ -22,6 +22,12 @@ void LoadDefaultPallete(){
     defaultPallete.AddTile(floor);
     delete[] &floor;
 
+    Tile air;
+    air.solid = false;
+    air.sprite = 3;
+    defaultPallete.AddTile(air);
+    delete[] &air;
+
     defaultPallete.LoadTexture("assets/tiles.png");
-    defaultPallete.GenerateSprites(3, 1);
+    defaultPallete.GenerateSprites(4, 2);
 };

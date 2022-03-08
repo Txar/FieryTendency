@@ -8,10 +8,10 @@
             "name": "(Windows) Launch",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/VoluntaryBoundary/VoluntaryBoundary.exe",
+            "program": "VoluntaryBoundary.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}/build/VoluntaryBoundary/",
             "environment": [],
             "console": "externalTerminal"
         }

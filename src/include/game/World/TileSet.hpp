@@ -13,7 +13,19 @@ class TileSet {
         std::vector<sf::Sprite> sprites;
 
         sf::Sprite GetSprite(int index){
-            return sprites[tiles[index*variants].sprite];
+            return sprites[tiles[index].sprite*variants];
+        };
+
+        int GetSpriteIndex(int index){
+            return tiles[index].sprite*variants;
+        };
+
+        sf::Sprite GetShadow(int index){
+            return sprites[tiles[index].sprite*variants + 1];
+        };
+
+        int GetShadowIndex(int index){
+            return tiles[index].sprite*variants + 1;
         };
 
         void AddTile(Tile tile){

@@ -1,4 +1,3 @@
 #pragma once
 
-int worldWidth = 20;
-int worldHeight = 10;
+const int NOON[2] = {0, 0};

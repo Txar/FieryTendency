@@ -8,20 +8,31 @@
 #include "game/Input.hpp"
 #include "game/World/World.hpp"
 #include "game/Content/TileTypes.hpp"
+#include "game/Content/WorldProperties.hpp"
 
 int main()
 {
+    sf::Clock clock;
+
     LoadDefaultPallete();
 
-    sf::RenderWindow window(sf::VideoMode(1280, 720), "Voluntary Boundary");
+    sf::Vector2i resolution;
+    resolution.x = 1280;
+    resolution.y = 720;
+
+    sf::RenderWindow window(sf::VideoMode(resolution.x, resolution.y), "Voluntary Boundary");
 
     window.setFramerateLimit(60);
 
     int movement[2];
-    float camera[2] = {0, 0};
+    float delta_time;
+    int camera[4] = {0, 0, 0, 0};
     float cameraVelocity[2] = {0, 0};
+    int cameraSpeed = 64;
 
     sf::Vector2u windowSize;
+    windowSize.x = window.getSize().x;
+    windowSize.y = window.getSize().y;
 
     sf::View view;
     sf::Sprite visibleTiles;
@@ -30,8 +41,14 @@ int main()
     world.InitializeTileMap(100, 100, defaultPallete);
     world.TileMapRoomFillTest();
 
+    world.DrawWorld({(float)camera[0], (float)camera[1], 1920, 1080});
+
     while (window.isOpen())
     {
+        delta_time = clock.getElapsedTime().asSeconds();
+        clock.restart();
+        std::cout << 1 / delta_time << " fps" << std::endl;
+
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -39,7 +56,8 @@ int main()
                 window.close();
             }
             if (event.type == sf::Event::Resized){
-                
+                windowSize.x = window.getSize().x;
+                windowSize.y = window.getSize().y;
             }
         }
 
@@ -47,25 +65,42 @@ int main()
         movement[1] = 0;
         MoveKeyInput(movement);
 
-        cameraVelocity[0] += movement[0];
-        cameraVelocity[1] += movement[1];
+        cameraVelocity[0] += movement[0] * cameraSpeed;
+        cameraVelocity[1] += movement[1] * cameraSpeed;
 
-        camera[0] += cameraVelocity[0];
-        camera[1] += cameraVelocity[1];
+        //all camera stuff is temporary, just for testing
+        if (camera[0] + cameraVelocity[0] < 0 - WORLD_BORDER){
+            cameraVelocity[0] = 0;
+        }
+        if (camera[0] + cameraVelocity[0] > world.width * TILE_SIZE + WORLD_BORDER){
+            cameraVelocity[0] = 0;
+        }
+        if (camera[1] + cameraVelocity[1] < 0 - WORLD_BORDER){
+            cameraVelocity[1] = 0;
+        }
+        if (camera[1] + cameraVelocity[1] > world.height * TILE_SIZE + WORLD_BORDER){
+            cameraVelocity[1] = 0;
+        }
 
-        cameraVelocity[0] -= cameraVelocity[0] * 0.02;
-        cameraVelocity[1] -= cameraVelocity[1] * 0.02;
 
-        windowSize = window.getSize();
+        camera[0] += cameraVelocity[0] * delta_time;
+        camera[1] += cameraVelocity[1] * delta_time;
 
-        view.reset(sf::FloatRect(camera[0], camera[1], windowSize.x, windowSize.y));
+        cameraVelocity[0] -= cameraVelocity[0] * 1.2 * delta_time;
+        cameraVelocity[1] -= cameraVelocity[1] * 1.2 * delta_time;
+
+        if (camera[2] != camera[0] || camera[3] != camera[1]){
+            world.DrawWorld({(float)camera[0], (float)camera[1], 1920, 1080});
+            camera[2] = camera[0];
+            camera[3] = camera[1];
+        }
+
+        view.reset({(float)camera[0], (float)camera[1], (float)windowSize.x, (float)windowSize.y});
         window.setView(view);
 
-        world.DrawWorld({camera[0], camera[1], windowSize.x, windowSize.y});
+        visibleTiles.setTexture(world.visibleTiles);
 
-        visibleTiles.setTexture(world.texture.getTexture());
-
-        visibleTiles.setPosition({camera[0], camera[1]});
+        visibleTiles.setPosition({(float)camera[0], (float)camera[1]});
         window.clear();
         window.draw(visibleTiles);
         //window.draw(world.pallete.GetSprite(0));
