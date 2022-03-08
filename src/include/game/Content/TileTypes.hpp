@@ -28,6 +28,12 @@ void LoadDefaultPallete(){
     defaultPallete.AddTile(air);
     delete[] &air;
 
+    Tile ceiling;
+    ceiling.solid = true;
+    ceiling.sprite = 4;
+    defaultPallete.AddTile(ceiling);
+    delete[] &ceiling;
+
     defaultPallete.LoadTexture("assets/tiles.png");
-    defaultPallete.GenerateSprites(4, 2);
+    defaultPallete.GenerateSprites(5, 2);
 };

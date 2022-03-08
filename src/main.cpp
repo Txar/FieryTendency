@@ -22,13 +22,13 @@ int main()
 
     sf::RenderWindow window(sf::VideoMode(resolution.x, resolution.y), "Voluntary Boundary");
 
-    window.setFramerateLimit(60);
+    //window.setFramerateLimit(60);
 
     int movement[2];
     float delta_time;
     int camera[4] = {0, 0, 0, 0};
     float cameraVelocity[2] = {0, 0};
-    int cameraSpeed = 64;
+    float cameraSpeed = 16;
 
     sf::Vector2u windowSize;
     windowSize.x = window.getSize().x;
@@ -89,8 +89,8 @@ int main()
         cameraVelocity[0] -= cameraVelocity[0] * 1.2 * delta_time;
         cameraVelocity[1] -= cameraVelocity[1] * 1.2 * delta_time;
 
+        world.DrawWorld({(float)camera[0], (float)camera[1], 1920, 1080});
         if (camera[2] != camera[0] || camera[3] != camera[1]){
-            world.DrawWorld({(float)camera[0], (float)camera[1], 1920, 1080});
             camera[2] = camera[0];
             camera[3] = camera[1];
         }

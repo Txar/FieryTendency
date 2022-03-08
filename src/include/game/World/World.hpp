@@ -4,7 +4,7 @@
 #include "game/World/Room.hpp"
 #include "SFML/Graphics.hpp"
 
-const int layers = 3;
+const int layers = 4;
 
 const int WORLD_BORDER = 64 * TILE_SIZE;
 
@@ -48,22 +48,15 @@ class World {
 
             texture.clear(skyColor);
 
-            /*for (int a = renderArea.top/TILE_SIZE - TILE_SIZE; a < (renderArea.top + renderArea.height + TILE_SIZE * 5); a++){
-
-                backgroundTile.setFillColor({ (sf::Uint8)(255 * a / (height + (WORLD_BORDER / TILE_SIZE * 2))),
-                    (sf::Uint8)(255 * a / (height + (WORLD_BORDER / TILE_SIZE * 2))),
-                    (sf::Uint8)(255 * a / (WORLD_BORDER / TILE_SIZE * 2))});
-                
-                backgroundTile.setPosition({0, a*TILE_SIZE - area.top});
-
-                texture.draw(backgroundTile);
-            }*/
-
+            int g = 0;
+        
             for (int layer = 0; layer < layers; layer++){
-                for (int i = renderArea.left/TILE_SIZE - TILE_SIZE; i < (renderArea.left + renderArea.width + TILE_SIZE * 5)/TILE_SIZE; i++){
-                    for (int j = renderArea.top/TILE_SIZE - TILE_SIZE; j < (renderArea.top + renderArea.height + TILE_SIZE * 5)/TILE_SIZE; j++){
+                for (int i = renderArea.left/TILE_SIZE - 1; i < (renderArea.left + renderArea.width + TILE_SIZE)/TILE_SIZE; i++){
+                    for (int j = renderArea.top/TILE_SIZE - 1; j < (renderArea.top + renderArea.height + TILE_SIZE)/TILE_SIZE; j++){
 
                         if (!(i >= width || j >= height || i < 0 || j < 0) && tileMap[layer][i][j] != 3){ //draws the tiles
+
+                            g++;
 
                             pallete.sprites[pallete.GetSpriteIndex(tileMap[layer][i][j])].setPosition(
                                 {(float)i*TILE_SIZE - area.left, j*TILE_SIZE - area.top - (float)(TILE_SIZE/1.8)*layer});
@@ -91,6 +84,7 @@ class World {
                     }
                 }
             }
+            std::cout << g << std::endl;
             texture.display();
             visibleTiles = texture.getTexture();
         };
@@ -124,10 +118,10 @@ class World {
                             tileMap[layer][i][j] = 0;
                         }
                         if (layer == 3 && j == 7){
-                            tileMap[layer][i][j] = 0;
+                            tileMap[layer][i][j] = 4;
                         }
                         if (layer == 3 && i == 9 && j < 12){
-                            tileMap[layer][i][j] = 1;
+                            tileMap[layer][i][j] = 4;
                         }
                         if (layer == 3 && i == 9 && j == 12){
                             tileMap[layer][i][j] = 0;
