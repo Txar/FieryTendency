@@ -22,15 +22,15 @@ bool collisionCheck(float x, float y, int width, int height, float x2, float y2,
 
 class CollisionBox {
     public:
+        sf::Vector2i offset = {0, 0};
+
         float x = 0, y = 0;
         int width = 32, height = 32;
         int collidesWith = 2; //0 is players/enemies, 1 is bullets, 2 is both, 3 is tiles, 4 is all
         int damageTaken = 0;
-
-        int offSetFromEntity[2] = {0, 0};
-
+ 
         bool CheckIfCollidesWith(CollisionBox boxB) {
-	        return collisionCheck(x, y, width, height, boxB.x, boxB.y, boxB.width, boxB.height);
+	        return collisionCheck(x + offset.x, y + offset.y, width, height, boxB.x, boxB.y, boxB.width, boxB.height);
         };
 
 };

@@ -12,6 +12,61 @@
 
 int main()
 {
+    Room a;
+    for (int layer = 0; layer < WORLD_LAYERS; layer++){
+        for (int i = 0; i < ROOM_WIDTH; i++){
+            for (int j = 0; j < ROOM_HEIGHT; j++){
+                a.tiles[layer][i][j] = 3;
+                if (j == 0){
+                    a.tiles[layer][i][j] = 0;
+                }
+                if (i == 0){
+                    a.tiles[layer][i][j] = 1;
+                }
+                if (layer == 0 && i > 0 && j > 0){
+                    a.tiles[layer][i][j] = 2;
+                }
+                if (layer == 2 && i > 0 && j == 3){
+                    a.tiles[layer][i][j] = 5;
+                }
+                if (layer == 0 && j > 1 && j < 5 && i == 3){
+                    a.tiles[layer][i][j] = 6;
+                }
+            };
+        };
+    }
+
+    Room c;
+    for (int layer = 0; layer < WORLD_LAYERS; layer++){
+        for (int i = 0; i < ROOM_WIDTH; i++){
+            for (int j = 0; j < ROOM_HEIGHT; j++){
+                c.tiles[layer][i][j] = 3;
+                if (j == 0){
+                    c.tiles[layer][i][j] = 0;
+                }
+                if (i == 0){
+                    c.tiles[layer][i][j] = 1;
+                }
+            };
+        };
+    }
+
+    a.connections[0] = true;
+    a.connections[1] = true;
+    a.connections[2] = false;
+    a.connections[3] = false;
+
+    std::cout << "a" << std::endl;
+    
+    ExportRoomTo(a, "room1.room");
+
+    Room b = LoadRoomFrom("room1.room");
+
+    std::cout << "c" << std::endl;
+    //std::cout << b.tiles[0][0] << " " << b.connections[1] << " " << b.tiles[5][5];
+
+
+
     sf::Clock clock;
 
     LoadDefaultPallete();
@@ -25,7 +80,6 @@ int main()
     //window.setFramerateLimit(60);
 
     int movement[2];
-    float delta_time;
     int camera[4] = {0, 0, 0, 0};
     float cameraVelocity[2] = {0, 0};
     float cameraSpeed = 16;
@@ -36,11 +90,12 @@ int main()
 
     sf::View view;
     sf::Sprite visibleTiles;
-
     World world;
-    world.InitializeTileMap(100, 100, defaultPallete);
+    std::cout << a.tiles[0][0][0] << std::endl;
+    world.SetPallete(defaultPallete);
     world.TileMapRoomFillTest();
-
+    world.AddRoom(b);
+    world.AddRoom(c);
     world.DrawWorld({(float)camera[0], (float)camera[1], 1920, 1080});
 
     while (window.isOpen())
@@ -106,33 +161,6 @@ int main()
         //window.draw(world.pallete.GetSprite(0));
         window.display();
     }
-
-
-    CollisionBox A, B;
-    A.x = 32;
-    A.y = 32;
-    //std::cout << A.CheckIfCollidesWith(B);
-
-    Room a;
-    for (int i = 0; i < 20; i++){
-        for (int j = 0; j < 12; j++){
-            a.tiles[i][j] = j + i;
-            //std::cout << j + i << std::endl;
-        };
-    };
-
-    a.connections[0] = true;
-    a.connections[1] = true;
-    a.connections[2] = false;
-    a.connections[3] = false;
-
-    //std::cout << room1.is_open();
-    
-    ExportRoomTo(a, "room1.room");
-
-    Room b = LoadRoomFrom("room1.room");
-    
-    std::cout << b.tiles[0][0] << " " << b.connections[1] << " " << b.tiles[5][5];
 
     return 0;
 }

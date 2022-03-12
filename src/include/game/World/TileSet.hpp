@@ -12,21 +12,33 @@ class TileSet {
 
         std::vector<sf::Sprite> sprites;
 
+
+
         sf::Sprite GetSprite(int index){
             return sprites[tiles[index].sprite*variants];
-        };
-
-        int GetSpriteIndex(int index){
-            return tiles[index].sprite*variants;
         };
 
         sf::Sprite GetShadow(int index){
             return sprites[tiles[index].sprite*variants + 1];
         };
 
+        sf::Sprite GetBottom(int index){
+            return sprites[tiles[index].sprite*variants + 2];
+        };
+
+
+        int GetSpriteIndex(int index){
+            return tiles[index].sprite*variants;
+        };
+
         int GetShadowIndex(int index){
             return tiles[index].sprite*variants + 1;
         };
+
+        int GetBottomIndex(int index){
+            return tiles[index].sprite*variants + 2;
+        };
+
 
         void AddTile(Tile tile){
             tiles.push_back(tile);
@@ -34,6 +46,10 @@ class TileSet {
 
         bool IsSolid(int index){
             return tiles[index].solid;
+        };
+
+        bool IsReflecting(int index){
+            return tiles[index].reflecting;
         };
 
         int GetId(int index){

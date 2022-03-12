@@ -1,3 +1,5 @@
+#include <math.h>
+
 class HealthBar{
     public:
         int current = 0;
@@ -13,5 +15,9 @@ class HealthBar{
             else{
                 current -= amt;
             }
+        };
+
+        int GetPercent(){
+            return ceil(current / max);
         };
 };

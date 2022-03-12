@@ -5,10 +5,11 @@
 void ExportRoomTo(Room room, std::string path){
     std::ofstream f;
     f.open(path);
-    for (int i = 0; i < 20; i++){
-        for (int j = 0; j < 12; j++){
-            f << room.tiles[i][j] << std::endl;
-            std::cout << room.tiles[i][j] << std::endl;
+    for (int layer = 0; layer < WORLD_LAYERS; layer++){
+        for (int i = 0; i < ROOM_WIDTH; i++){
+            for (int j = 0; j < ROOM_HEIGHT; j++){
+                f << room.tiles[layer][i][j] << std::endl;
+            }
         }
     }
     f << room.connections[0] << std::endl;
@@ -22,9 +23,11 @@ Room LoadRoomFrom(std::string path){
     std::ifstream f;
     f.open(path);
     Room a;
-    for (int i = 0; i < 20; i++){
-        for (int j = 0; j < 12; j++){
-            f >> a.tiles[i][j];
+    for (int layer = 0; layer < WORLD_LAYERS; layer++){
+        for (int i = 0; i < ROOM_WIDTH; i++){
+            for (int j = 0; j < ROOM_HEIGHT; j++){
+                f >> a.tiles[layer][i][j];
+            }
         }
     }
     f >> a.connections[0];

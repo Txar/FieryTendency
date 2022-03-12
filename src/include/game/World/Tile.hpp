@@ -11,6 +11,8 @@ int SnapToTileGrid(float s){
 struct Tile {
     public:
         bool solid = false;
+        bool reflecting = false;
+        bool floor = false;
         int sprite;
         int id;
 };
