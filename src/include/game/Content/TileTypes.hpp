@@ -20,6 +20,7 @@ void LoadDefaultPallete(){
     floor.solid = false;
     floor.sprite = 2;
     floor.floor = true;
+    floor.friction = 0.35;
     defaultPallete.AddTile(floor);
 
     Tile air;
@@ -42,19 +43,25 @@ void LoadDefaultPallete(){
     metalFloor.reflecting = true;
     metalFloor.sprite = 6;
     metalFloor.floor = true;
+    metalFloor.friction = 0.3;
     defaultPallete.AddTile(metalFloor);
+
+    Tile tt;
+    tt.solid = true;
+    tt.sprite = 7;
+    defaultPallete.AddTile(tt);
 
     //enum tiles {wallEdge, wall, floor, air, ceiling, ceilingEdge};
 
-    delete[] &metalFloor;
+    /*delete[] &metalFloor;
     delete[] &ceilingEdge;
     delete[] &ceiling;
     delete[] &air;
     delete[] &floor;
     delete[] &wall;
     delete[] &wallEdge;
-    delete[] &metalFloor;
+    delete[] &metalFloor;*/
 
     defaultPallete.LoadTexture("assets/tiles.png");
-    defaultPallete.GenerateSprites(7, 3);
+    defaultPallete.GenerateSprites(11, 3);
 };

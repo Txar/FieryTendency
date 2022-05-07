@@ -2,7 +2,7 @@
 #include <math.h>
 #pragma once
 
-const int TILE_SIZE = 64;
+const int TILE_SIZE = 16;
 
 int SnapToTileGrid(float s){
     return TILE_SIZE * ceil(s / TILE_SIZE);
@@ -14,5 +14,6 @@ struct Tile {
         bool reflecting = false;
         bool floor = false;
         int sprite;
+        float friction = 0.4;
         int id;
 };

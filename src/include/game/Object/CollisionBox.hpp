@@ -1,23 +1,19 @@
 #pragma once
 
-bool collisionCheck(float x, float y, int width, int height, float x2, float y2, int width2, int height2){
-    bool Xcollides = false;
-    bool Ycollides = false;
+bool collisionCheck(int x, int y, int width, int height, int x2, int y2, int width2, int height2){
+    sf::IntRect a, b;
 
-    for (int i = 0; i != 2; i++){
-	    for (int j = 0; j != 2; j++){
+    a.left = x;
+    a.top = y;
+    a.width = width;
+    a.height = height;
 
-		    if (x2 + width2 * i  >= x && x + width2 * i <= x + width) {
-		        Xcollides = true;
-            };
+    b.left = x2;
+    b.top = y2;
+    b.width = width2;
+    b.height = height2;
 
-    		if (y2 + height2 * j >= y && y2 + height2 * j <= y + height){
-				Ycollides = true;
-            };
-
-        };
-    };
-    return (Xcollides && Ycollides);
+    return a.intersects(b);
 };
 
 class CollisionBox {
@@ -26,11 +22,10 @@ class CollisionBox {
 
         float x = 0, y = 0;
         int width = 32, height = 32;
-        int collidesWith = 2; //0 is players/enemies, 1 is bullets, 2 is both, 3 is tiles, 4 is all
+        //int hits = 2; //0 is players/enemies, 1 is bullets, 2 is both, 3 is tiles, 4 is all
         int damageTaken = 0;
  
         bool CheckIfCollidesWith(CollisionBox boxB) {
-	        return collisionCheck(x + offset.x, y + offset.y, width, height, boxB.x, boxB.y, boxB.width, boxB.height);
+	        return collisionCheck(x + offset.x, y + offset.y, width, height, boxB.x + boxB.offset.x, boxB.y + boxB.offset.x, boxB.width, boxB.height);
         };
-
 };

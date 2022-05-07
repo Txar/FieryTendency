@@ -4,14 +4,21 @@
 #include "game/World/Room.hpp"
 #include "SFML/Graphics.hpp"
 #include "game/Content/WorldProperties.hpp"
+#include "game/Content/StandardEntities.hpp"
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
+#include "game/Weapon/Bullet.hpp"
+#include "game/Content/BulletTypes.hpp"
 #pragma once
+
+sf::Texture MISSING_TEXTURE;
 
 const int layers = WORLD_LAYERS;
 
 const int WORLD_BORDER = 64 * TILE_SIZE;
+
+float secondTimer = 0;
 
 class World {
     public:
@@ -20,28 +27,146 @@ class World {
         int width = WORLD_WIDTH;
         int height = WORLD_HEIGHT;
         int tileMap[WORLD_WIDTH / ROOM_WIDTH][WORLD_HEIGHT / ROOM_HEIGHT];
+
         std::vector<Room> rooms;
         std::vector<Entity> entityMap = {};
+        std::vector<Entity> bulletMap = {};
+
         TileSet pallete;
         sf::Texture visibleTiles;
-        sf::Texture entitiyTexture;
+        sf::RenderTexture entityTexture;
+        sf::RenderTexture healthBarsTexture;
+
+        World() {
+            MISSING_TEXTURE.loadFromFile("assets/notexture.png");
+        }
 
         void AddRoom(Room room){
             rooms.push_back(room);
         };
  
-        int GetTileIndexFromCoordinates(int x, int y, int layer){
+        int GetTileIndexFromCoordinates(double x, double y, int layer){
             return rooms.at(tileMap[(int)ceil(x / ROOM_WIDTH / TILE_SIZE)][(int)ceil(y / ROOM_HEIGHT / TILE_SIZE)])
             .tiles[layer][SnapToTileGrid(x)/TILE_SIZE % ROOM_WIDTH]
             [SnapToTileGrid(y)/TILE_SIZE % ROOM_HEIGHT];
         };
 
         void UpdateEntities(sf::FloatRect viewArea){
+            Entity tempEntity;
+            for (int i = 0; i < (int)entityMap.size(); i++){
+                tempEntity = entityMap.at(i);
+
+                if (tempEntity.dead){
+                    if (tempEntity.justDied){
+                        DropLoot(i);
+                        tempEntity.justDied = false;
+                        entityMap.at(i) = tempEntity;
+                    }
+                    continue;
+                }
+                for (int b = 0; b < (int)tempEntity.collisionBoxes.size(); b++){
+
+                    for (int bullet = 0; bullet < (int)bulletMap.size(); bullet++){
+
+                        if (tempEntity.collisionBoxes.at(b).CheckIfCollidesWith(bulletMap.at(bullet).collisionBoxes.at(0)) && 
+                        !bulletMap.at(bullet).dead && (bulletMap.at(bullet).team != tempEntity.team)
+                        && tempEntity.invincibilityTimer <= 0){
+
+                            tempEntity.collisionBoxes.at(b).damageTaken = bulletMap.at(bullet).collisionDamage;
+                            bulletMap.at(bullet).piercing--;
+
+                            if (bulletMap.at(bullet).piercing < 0){
+                                bulletMap.at(bullet).Die();
+                            }
+                        }
+                    }
+                }
+
+                tempEntity.Update();
+                if (tempEntity.dead){
+                    entityMap.at(i) = tempEntity;
+                    continue;
+                }
+                
+                tempEntity.x += tempEntity.velocity.x;
+                if (CheckIfEntityCollides(tempEntity)){
+                    tempEntity.x -= tempEntity.velocity.x;
+                    tempEntity.velocity.x = 0;
+                }
+
+                tempEntity.y += tempEntity.velocity.y;
+                if (CheckIfEntityCollides(tempEntity)){
+                    tempEntity.y -= tempEntity.velocity.y;
+                    tempEntity.velocity.y = 0;
+                }
+                
+                if (!tempEntity.floating){
+                    tempEntity = ApplyFriction(tempEntity);
+                }
+
+                entityMap.at(i) = tempEntity;
+            }
             
+            for (int i = 0; i < (int)bulletMap.size(); i++){
+                
+                bulletMap.at(i).UpdateTrail();
+
+                tempEntity = bulletMap.at(i);
+
+                if (tempEntity.dead){
+                    continue;
+                }
+
+                tempEntity.Update();
+                if (tempEntity.dead){
+                    bulletMap.at(i) = tempEntity;
+                    continue;
+                }
+                
+                tempEntity.x += tempEntity.velocity.x;
+                if (CheckIfEntityCollides(tempEntity)){
+                    if (tempEntity.bounces > 0){
+                        tempEntity.x -= tempEntity.velocity.x;
+                        tempEntity.velocity.x = -tempEntity.velocity.x;
+                        tempEntity.bounces--;
+                    }
+                    else {
+                        tempEntity.Die();
+                    }
+                }
+
+                tempEntity.y += tempEntity.velocity.y;
+                if (CheckIfEntityCollides(tempEntity)){
+                    if (tempEntity.bounces > 0){
+                        tempEntity.y -= tempEntity.velocity.y;
+                        tempEntity.velocity.y = -tempEntity.velocity.y;
+                        tempEntity.bounces--;
+                    }
+                    else {
+                        tempEntity.Die();
+                    }
+                }
+                    
+                TrailPoint tempTrail;
+                tempTrail.x = tempEntity.x;
+                tempTrail.y = tempEntity.y;
+                tempTrail.timer = 0.1;
+                tempEntity.trailPoints.push_back(tempTrail);
+            
+
+                bulletMap.at(i) = tempEntity;
+            }
         };
 
         void Update(sf::FloatRect viewArea){
+            //DrawBullets(viewArea);
+            DrawEntities(viewArea);
+            DrawHealthBars(viewArea);
+            entityTexture.display();
+            healthBarsTexture.display();
+            
             DrawWorld(viewArea);
+            UpdateEntities(viewArea);
         };
 
         void SetPallete(TileSet tiles){
@@ -50,10 +175,10 @@ class World {
 
         bool CheckIfEntityCollides(Entity entity){
             for (CollisionBox i : entity.collisionBoxes){
-                for (int j = 0; j < i.width; j += TILE_SIZE){
-                    for (int k = 0; k < i.height; k += TILE_SIZE){    
-                        if (pallete.IsSolid(GetTileIndexFromCoordinates(i.x + i.offset.x + entity.velocity.x, i.y + i.offset.y, 0)) ||
-                        pallete.IsSolid(GetTileIndexFromCoordinates(i.x + i.offset.x, i.y + i.offset.y + entity.velocity.y, 0))){
+                for (int j = 0; j < i.width; j += floor(TILE_SIZE / 16)){
+                    for (int k = 0; k < i.height; k += floor(TILE_SIZE / 16)){
+                        if (pallete.IsSolid(GetTileIndexFromCoordinates(entity.x + i.offset.x + entity.velocity.x + j, entity.y + i.offset.y + k, 1))){
+                            return true;
                         }
                     }
                 }
@@ -61,17 +186,11 @@ class World {
             return false;
         };
 
-        /*bool CheckCollisionsWithTileMap(CollisionBox box){
-            bool collides = false;
-            for (int i = SnapToTileGrid(box.x); i < SnapToTileGrid(box.x + box.width + TILE_SIZE); i += TILE_SIZE){
-                for (int j = SnapToTileGrid(box.y); i < SnapToTileGrid(box.y + box.height + TILE_SIZE); j += TILE_SIZE){
-                    if (pallete.IsSolid(tileMap[0][i/TILE_SIZE][j/TILE_SIZE])){
-                        collides = true;
-                    }
-                }
-            }
-            return collides;
-        };*/
+        Entity ApplyFriction(Entity entity){
+            entity.velocity.x -= entity.velocity.x * pallete.GetFriction(GetTileIndexFromCoordinates(entity.x, entity.y, 0));
+            entity.velocity.y -= entity.velocity.y * pallete.GetFriction(GetTileIndexFromCoordinates(entity.x, entity.y, 0));
+            return entity;
+        }
 
         int SummonObject(Entity object){
             int index = entityMap.size();
@@ -79,15 +198,61 @@ class World {
             return index;
         };
 
+        void SummonBullet(float x, float y, sf::Vector2f v, Bullet b){
+            Entity bullet;
+            bullet.bullet = true;
+            bullet.bounces = b.bounces;
+            bullet.floating = true;
+            bullet.collisionDamage = b.damage;
+            bullet.piercing = b.piercing;
+            bullet.team = b.team;
+
+            sf::Sprite bulletSprite;
+            bulletSprite.setTexture(bulletTexture);
+            bulletSprite.setTextureRect(b.sprite);
+            bullet.AddSprite(bulletSprite);
+
+            b.sprite.top += b.sprite.height;
+            bulletSprite.setTextureRect(b.sprite);
+            bullet.trailSprite = bulletSprite;
+
+            bullet.velocity = v;
+            bullet.x = x;
+            bullet.y = y;
+
+            CollisionBox box;
+            box.width = b.width;
+            box.height = b.height;
+            bullet.collisionBoxes.push_back(box);
+
+            bulletMap.push_back(bullet);
+        }
+
         bool IsASolid(int x, int y, int layer){
             return pallete.IsSolid(GetTileIndexFromCoordinates(x * TILE_SIZE, y * TILE_SIZE, layer));
         };
+
+        void DropLoot(int entityIndex){
+            std::cout << "a\n";
+            std::vector<ItemDrop> loot = entityMap.at(entityIndex).loot;
+            for (int i = 0; i < (int)loot.size(); i++){
+                DropItem(loot.at(i), entityMap.at(entityIndex).x, entityMap.at(entityIndex).y);
+            }
+        }
+
+        void DropItem(ItemDrop a, int x, int y){
+            Entity tempEntity = standard_item_entity;
+            tempEntity.x = x;
+            tempEntity.y = y;
+            tempEntity.AddSprite(a.item.sprite);
+
+            SummonObject(tempEntity);
+        }
 
         void DrawWorld(sf::FloatRect area){
             sf::IntRect renderArea = {SnapToTileGrid(area.left), SnapToTileGrid(area.top), SnapToTileGrid(area.width), SnapToTileGrid(area.height)};
             sf::RenderTexture texture;
             
-            std::cout << "b" << std::endl;
             if (!texture.create(area.width, area.height) || !visibleTiles.create(area.width, area.height)){
                 printf("Failed to create tileMap texture\n");
             };
@@ -100,8 +265,8 @@ class World {
             int g = 0;
         
             for (int layer = 0; layer < layers; layer++){
-                for (int i = renderArea.left/TILE_SIZE - 1; i < (renderArea.left + renderArea.width + TILE_SIZE)/TILE_SIZE; i++){
-                    for (int j = renderArea.top/TILE_SIZE - 1; j < (renderArea.top + renderArea.height + TILE_SIZE)/TILE_SIZE; j++){
+                for (int i = renderArea.left/TILE_SIZE - 1; i < (renderArea.left + renderArea.width + TILE_SIZE) / TILE_SIZE; i++){
+                    for (int j = renderArea.top/TILE_SIZE - 1; j < (renderArea.top + renderArea.height + TILE_SIZE) / TILE_SIZE; j++){
 
                         if (!(i >= width || j >= height || i < 0 || j < 0) && GetTileIndexFromCoordinates(i * TILE_SIZE, j  * TILE_SIZE, layer) != 3){ //draws the tiles
                             g++;
@@ -151,24 +316,95 @@ class World {
                 }
 
                 if (layer == 0){
-                    sf::Sprite entities(entitiyTexture);
+                    sf::Sprite entities(entityTexture.getTexture());
                     texture.draw(entities);
                 }
             }
-            std::cout << g << std::endl;
+            sf::Sprite t(healthBarsTexture.getTexture());
+            texture.draw(t);
             texture.display();
             visibleTiles = texture.getTexture();
         };
 
-        /*void FillTileMapWith(int num){
-            for (int layer = 0; layer < layers; layer++){
-                for (int i = 0; i < width; i++){
-                    for (int j = 0; j < height; j++){
-                        GetTileIndexFromCoordinates(i * TILE_SIZE, j  * TILE_SIZE, layer) = num;
+        void DrawEntities(sf::FloatRect area){
+            sf::Sprite currentSprite;
+            entityTexture.create(area.width, area.height);
+            entityTexture.clear({0, 0, 0, 0});
+
+            sf::FloatRect tempArea = area;
+            tempArea.left -= TILE_SIZE * 2;
+            tempArea.top -= TILE_SIZE * 2;
+            tempArea.width += TILE_SIZE * 2;
+            tempArea.height += TILE_SIZE * 2;
+
+            for (Entity i : entityMap){
+                if (i.dead && tempArea.contains(i.x, i.y) && (int(i.invincibilityTimer * 10) % 2 || i.invincibilityTimer <= 0)){
+                    for (ObjectSprite j : i.dead_sprites){
+                            currentSprite = j.sprite;
+                            currentSprite.setPosition({i.x + j.offset.x + TILE_SIZE - area.left, i.y + j.offset.y + TILE_SIZE - area.top});
+                            entityTexture.draw(currentSprite);
                     }
                 }
             }
-        };*/
+
+            for (Entity i : entityMap){
+                if (!i.dead && tempArea.contains(i.x, i.y) && (int(i.invincibilityTimer * 10) % 2 || i.invincibilityTimer <= 0)){
+                    for (ObjectSprite j : i.sprites){
+                        currentSprite = j.sprite;
+                        currentSprite.setPosition({i.x + j.offset.x + TILE_SIZE - area.left, i.y + j.offset.y + TILE_SIZE - area.top});
+                        entityTexture.draw(currentSprite);
+                    }
+                }
+            }
+
+            for (Entity i : bulletMap){
+                for (TrailPoint k : i.trailPoints){
+                    if (i.x == k.x && i.y == k.y){
+                        continue;
+                    }
+                    currentSprite = i.trailSprite;
+                    currentSprite.setPosition(k.x + TILE_SIZE - area.left, k.y + TILE_SIZE - area.top);
+                    entityTexture.draw(currentSprite);
+                }
+            }
+
+            for (Entity i : bulletMap){
+                if (tempArea.contains(i.x, i.y)){
+                    for (ObjectSprite j : i.sprites){
+                        if (i.dead){
+                            break;
+                        }
+                        currentSprite = j.sprite;
+                        currentSprite.setPosition({i.x + j.offset.x + TILE_SIZE - area.left, i.y + j.offset.y + TILE_SIZE - area.top});
+                        entityTexture.draw(currentSprite);
+                    }
+                }
+            }            
+        }
+
+        void DrawBullets(sf::FloatRect area){
+            sf::Sprite currentSprite;
+            for (Entity i : bulletMap){
+                if (area.contains(i.x, i.y)){
+                    currentSprite = i.sprites.at(0).sprite;
+                    currentSprite.setPosition(i.x + i.sprites.at(0).offset.x + TILE_SIZE - area.left, i.y + i.sprites.at(0).offset.y + TILE_SIZE - area.top);
+                    entityTexture.draw(currentSprite);
+                }
+            }
+        }
+
+        void DrawHealthBars(sf::FloatRect area){
+            sf::Sprite currentSprite;
+            healthBarsTexture.create(area.width, area.height);
+            healthBarsTexture.clear({0, 0, 0, 0});
+            for (Entity i : entityMap){
+                if (area.contains(i.x, i.y) && !i.dead){
+                    currentSprite = i.HPsprite.sprite;
+                    currentSprite.setPosition(i.x + i.HPsprite.offset.x + TILE_SIZE - area.left, i.y + i.HPsprite.offset.y + TILE_SIZE - area.top);
+                    healthBarsTexture.draw(currentSprite);   
+                }
+            }
+        }
 
         void TileMapRoomFillTest(){
             srand(time(NULL));
@@ -177,5 +413,6 @@ class World {
                     tileMap[i][j] = rand() % 2;
                 }
             }
+            tileMap[1][1] = 0;
         };
 };

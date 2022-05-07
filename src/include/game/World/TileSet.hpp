@@ -40,6 +40,10 @@ class TileSet {
         };
 
 
+        float GetFriction(int index){
+            return tiles[index].friction;
+        }
+
         void AddTile(Tile tile){
             tiles.push_back(tile);
         };

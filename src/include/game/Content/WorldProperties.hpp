@@ -12,4 +12,6 @@ const int WORLD_HEIGHT = ROOM_HEIGHT  * 30;
 
 const int WORLD_LAYERS = 3;
 
+const int SCALING = 3;
+
 float delta_time = 0;

@@ -9,6 +9,8 @@
 #include "game/World/World.hpp"
 #include "game/Content/TileTypes.hpp"
 #include "game/Content/WorldProperties.hpp"
+#include "game/Content/BulletTypes.hpp"
+#include <algorithm>
 
 int main()
 {
@@ -17,20 +19,37 @@ int main()
         for (int i = 0; i < ROOM_WIDTH; i++){
             for (int j = 0; j < ROOM_HEIGHT; j++){
                 a.tiles[layer][i][j] = 3;
-                if (j == 0){
-                    a.tiles[layer][i][j] = 0;
-                }
-                if (i == 0){
-                    a.tiles[layer][i][j] = 1;
-                }
-                if (layer == 0 && i > 0 && j > 0){
+                if (layer == 0){
                     a.tiles[layer][i][j] = 2;
                 }
-                if (layer == 2 && i > 0 && j == 3){
+                if (j == 0 && layer >= 2){
+                    if (rand() % 5 == 4){
+                        a.tiles[layer][i][j] = 7;
+                    }
+                    else {
+                        a.tiles[layer][i][j] = 0;
+                    }
+                }
+                /*if (i == 0){
+                    a.tiles[layer][i][j] = 1;
+                }*/
+                if (i == 0 && j == 0){
+                    a.tiles[layer][i][j] = 0;
+                }
+                if (layer == 2 && j == 3){
                     a.tiles[layer][i][j] = 5;
                 }
                 if (layer == 0 && j > 1 && j < 5 && i == 3){
                     a.tiles[layer][i][j] = 6;
+                }
+                if (j > 3 && j < 8 && i == 7){
+                    a.tiles[layer][i][j] = 1;
+                }
+                if (i == 7 && j == 8){
+                    a.tiles[layer][i][j] = 0;
+                }
+                if (i == 5 && j == 6){
+                    a.tiles[layer][i][j] = 0;
                 }
             };
         };
@@ -41,12 +60,15 @@ int main()
         for (int i = 0; i < ROOM_WIDTH; i++){
             for (int j = 0; j < ROOM_HEIGHT; j++){
                 c.tiles[layer][i][j] = 3;
+                if (layer == 0){
+                    c.tiles[layer][i][j] = 2;
+                }
                 if (j == 0){
                     c.tiles[layer][i][j] = 0;
                 }
-                if (i == 0){
+                /*if (i == 0){
                     c.tiles[layer][i][j] = 1;
-                }
+                }*/
             };
         };
     }
@@ -63,26 +85,26 @@ int main()
     Room b = LoadRoomFrom("room1.room");
 
     std::cout << "c" << std::endl;
-    //std::cout << b.tiles[0][0] << " " << b.connections[1] << " " << b.tiles[5][5];
-
-
 
     sf::Clock clock;
-
+    printf("j\n");
+    LoadStandardItems();
     LoadDefaultPallete();
+    LoadStandardEntities();
+    LoadBullets();
 
     sf::Vector2i resolution;
     resolution.x = 1280;
     resolution.y = 720;
-
     sf::RenderWindow window(sf::VideoMode(resolution.x, resolution.y), "Voluntary Boundary");
 
-    //window.setFramerateLimit(60);
+    window.setFramerateLimit(60);
 
-    int movement[2];
+    float movement[2];
     int camera[4] = {0, 0, 0, 0};
-    float cameraVelocity[2] = {0, 0};
-    float cameraSpeed = 16;
+    int cameraSpeed = TILE_SIZE * 4;
+    bool previousMousePressed = false;
+    bool currentMousePressed = false;
 
     sf::Vector2u windowSize;
     windowSize.x = window.getSize().x;
@@ -91,18 +113,55 @@ int main()
     sf::View view;
     sf::Sprite visibleTiles;
     World world;
-    std::cout << a.tiles[0][0][0] << std::endl;
     world.SetPallete(defaultPallete);
     world.TileMapRoomFillTest();
     world.AddRoom(b);
-    world.AddRoom(c);
-    world.DrawWorld({(float)camera[0], (float)camera[1], 1920, 1080});
+    world.AddRoom(b);
+    world.DrawWorld({(float)camera[0], (float)camera[1], (float)resolution.x, (float)resolution.y});
+    
+    entityTypes[0].x = TILE_SIZE * 2;
+    entityTypes[0].y = TILE_SIZE * 3;
+    printf("%f\n%f\n", entityTypes[0].x, entityTypes[0].y);
+    world.SummonObject(entityTypes[0]);
+
+    int fps = 0;
+
+    std::cout << world.GetTileIndexFromCoordinates(128, 128, 0) << std::endl;
+
+    visibleTiles.setScale(SCALING, SCALING);
 
     while (window.isOpen())
     {
         delta_time = clock.getElapsedTime().asSeconds();
         clock.restart();
-        std::cout << 1 / delta_time << " fps" << std::endl;
+        secondTimer += delta_time;
+
+        if (secondTimer >= 1){
+            secondTimer = 0;
+            std::cout << fps << " fps" << std::endl;
+            fps = 0;
+
+            if (FPressed){
+                Entity tempObject = entityTypes.at(0);
+                tempObject.x = world.entityMap.at(0).x;
+                tempObject.y = world.entityMap.at(0).y;
+                tempObject.team = 1;
+                world.SummonObject(tempObject);
+            }
+        }
+        fps++;
+
+
+        currentMousePressed = sf::Mouse::isButtonPressed(sf::Mouse::Left);
+
+        if (!previousMousePressed && currentMousePressed){
+            mouse = sf::Mouse::getPosition(window);
+            sf::Vector2f bulletVelocity = shootBullet(mouse, {world.entityMap.at(0).x, world.entityMap.at(0).y}, {camera[0], camera[1]}, resolution, bulletTypes.at(0));
+            world.SummonBullet(world.entityMap.at(0).x + TILE_SIZE * 0.75, world.entityMap.at(0).y + TILE_SIZE * 0.75, bulletVelocity, bulletTypes.at(0));
+            std::cout << abs(bulletVelocity.x) + abs(bulletVelocity.y) << std::endl;
+        }
+
+        previousMousePressed = currentMousePressed;
 
         sf::Event event;
         while (window.pollEvent(event))
@@ -120,35 +179,22 @@ int main()
         movement[1] = 0;
         MoveKeyInput(movement);
 
-        cameraVelocity[0] += movement[0] * cameraSpeed;
-        cameraVelocity[1] += movement[1] * cameraSpeed;
+        world.entityMap.at(0).Accelerate(movement[0] * cameraSpeed * delta_time, movement[1] * cameraSpeed * delta_time);
 
-        //all camera stuff is temporary, just for testing
-        if (camera[0] + cameraVelocity[0] < 0 - WORLD_BORDER){
-            cameraVelocity[0] = 0;
-        }
-        if (camera[0] + cameraVelocity[0] > world.width * TILE_SIZE + WORLD_BORDER){
-            cameraVelocity[0] = 0;
-        }
-        if (camera[1] + cameraVelocity[1] < 0 - WORLD_BORDER){
-            cameraVelocity[1] = 0;
-        }
-        if (camera[1] + cameraVelocity[1] > world.height * TILE_SIZE + WORLD_BORDER){
-            cameraVelocity[1] = 0;
-        }
+        camera[0] = world.entityMap.at(0).x - (windowSize.x / 2 / SCALING) + (TILE_SIZE * 1.5);
+        camera[1] = world.entityMap.at(0).y - (windowSize.y / 2 / SCALING) + (TILE_SIZE * 1.5);
 
+        /*if (abs(world.entityMap.at(0).x - camera[0] - (windowSize.x / 2 / SCALING)) > 10)
+            camera[2] += (world.entityMap.at(0).x - camera[0] - (windowSize.x / 2 / SCALING)) / abs(world.entityMap.at(0).x - camera[0] - (windowSize.x / 2 / SCALING)) * cameraSpeed / 10;
 
-        camera[0] += cameraVelocity[0] * delta_time;
-        camera[1] += cameraVelocity[1] * delta_time;
+        if (abs(world.entityMap.at(0).y - camera[1] - (windowSize.y / 2 / SCALING)) > 10)
+            camera[3] += (world.entityMap.at(0).y - camera[1] - (windowSize.y / 2 / SCALING)) / abs(world.entityMap.at(0).y - camera[1] - (windowSize.y / 2 / SCALING)) * cameraSpeed / 10;
+        */
 
-        cameraVelocity[0] -= cameraVelocity[0] * 1.2 * delta_time;
-        cameraVelocity[1] -= cameraVelocity[1] * 1.2 * delta_time;
-
-        world.DrawWorld({(float)camera[0], (float)camera[1], 1920, 1080});
-        if (camera[2] != camera[0] || camera[3] != camera[1]){
-            camera[2] = camera[0];
-            camera[3] = camera[1];
-        }
+        world.Update({(float)camera[0], (float)camera[1], (float)resolution.x / SCALING, (float)resolution.y / SCALING});
+        
+        //camera[0] += camera[2] * delta_time;
+        //camera[1] = camera[3] * delta_time;
 
         view.reset({(float)camera[0], (float)camera[1], (float)windowSize.x, (float)windowSize.y});
         window.setView(view);
@@ -158,7 +204,6 @@ int main()
         visibleTiles.setPosition({(float)camera[0], (float)camera[1]});
         window.clear();
         window.draw(visibleTiles);
-        //window.draw(world.pallete.GetSprite(0));
         window.display();
     }
 

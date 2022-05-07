@@ -1,4 +1,5 @@
-class Attack {
-    public:
-        float damage = 2;
+#pragma once
+
+struct Attack {
+    float damage = 2;
 };

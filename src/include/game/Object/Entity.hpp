@@ -3,32 +3,51 @@
 #include "game/Object/HealthBar.hpp"
 #include "game/Weapon/Bullet.hpp"
 #include "game/Object/ObjectSprite.hpp"
+#include "game/Object/Loot.hpp"
 #pragma once
 
 class Entity {
     public:
         float x, y;
         sf::Vector2f velocity;
-        bool bullet = false;
-        bool invincible = false;
         int invincibilityFrames = 0;
+        float invincibilityTimer;
+        int team = 0; //0 is players, 1 is enemies
         HealthBar HP;
+
         bool dead = false;
+        bool justDied = false;
+
         std::vector<CollisionBox> collisionBoxes;
         std::vector<ObjectSprite> sprites;
+        std::vector<ObjectSprite> dead_sprites;
 
-        /*void Shoot(Bullet bullet){
-            float Xvelocity = bullet.Xvelocity, Yvelocity = bullet.Yvelocity;
+        std::vector<ItemDrop> loot;
 
-            int framesUntilEnergyLoss = bullet.framesUntilEnergyLoss;
-            float energyLossEveryFrame = bullet.energyLossEveryFrame;
+        ObjectSprite HPsprite;
 
-            float contactDamage = bullet.damage;
-        };*/
-        void Accelerate(int x, int y){
+        bool player = false;
+
+        //bullet stuff
+        std::vector<TrailPoint> trailPoints;
+        sf::Sprite trailSprite;
+        int piercing;
+        int bounces;
+        float collisionDamage;
+        bool bullet = false;
+        bool floating = false;
+        bool invincible = false;
+        bool item = false;
+
+        Entity(){
+            HP.current = 1;
+            HP.max = 1;
+        }
+
+        void Accelerate(float x, float y){
             velocity.x += x;
             velocity.y += y;
-        };
+        }
 
         void AddSprite(sf::Sprite sprite, int Xoffset = 0, int Yoffset = 0){
             ObjectSprite s;
@@ -36,36 +55,71 @@ class Entity {
             s.offset.x = Xoffset;
             s.offset.y = Yoffset;
             sprites.push_back(s);
-        };
+        }
+
+        void AddDeadSprite(sf::Sprite sprite, int Xoffset = 0, int Yoffset = 0){
+            ObjectSprite s;
+            s.sprite = sprite;
+            s.offset.x = Xoffset;
+            s.offset.y = Yoffset;
+            sprites.push_back(s);
+        }
+
+        void UpdateHealthBarSprite(){
+            HPsprite.sprite = HP.currentSprite;
+            HPsprite.offset.x = - HP.spriteSize.x / 4;
+            HPsprite.offset.y = - ceil(TILE_SIZE / 1.5);
+        }
+
+        void UpdateTrail(){
+            for (int i = 0; i < (int)trailPoints.size(); i++){
+                if (trailPoints.at(i).timer <= 0){
+                    trailPoints.erase(trailPoints.begin() + i);
+                }
+                else {
+                    trailPoints.at(i).timer -= delta_time;
+                }
+            }
+        }
 
         void Update(){
-            int overall = 0;
-            for (CollisionBox i : collisionBoxes){
-                overall += i.damageTaken;
-                i.damageTaken = 0;
+            for (int i = 0; i < (int)collisionBoxes.size(); i++){
+                collisionBoxes.at(i).x = x;
+                collisionBoxes.at(i).y = y;
             }
-            if (!invincible || invincibilityFrames > 0){
-                HP.Damage(overall);
-                invincibilityFrames = (int) 1 / delta_time / 2;
+
+            if (!bullet){
+                int overall = 0;
+
+                for (int i = 0; i < (int)collisionBoxes.size(); i++){
+                    overall += collisionBoxes.at(0).damageTaken;
+                    collisionBoxes.at(i).damageTaken = 0;
+                }
+
+                if (invincibilityTimer > 0){
+                    invincibilityTimer -= delta_time;
+                }
+
+                if (!invincible && invincibilityTimer <= 0 && overall != 0){
+                    HP.Damage(overall);
+                    invincibilityTimer = 0.5;
+                }
+                if (HP.current == 0){
+                    Die();
+                }
+                HP.UpdateSprite();
+                UpdateHealthBarSprite();
             }
-            if (HP.current == 0){
-                Die();
-            }
-        };
+        }
 
         void Die(){
             dead = true;
+            justDied = true;
         }
-        
-        bool CheckIfCollides(int offSet[2]){
-            bool Xcollides = 0;
-            bool Ycollides = 0;
 
-            for (CollisionBox i : collisionBoxes){
-                if (i.collidesWith >= 3){
-                    
-                };
-            };
-            return (Xcollides && Ycollides);
-        };
+        void AccelerateTowards(Entity target, sf::Vector2f v){
+            float tx = target.x - x;
+            float ty = target.y - y;
+            Accelerate(tx / abs(tx) * v.x, ty / abs(ty) * v.y);
+        }
 };

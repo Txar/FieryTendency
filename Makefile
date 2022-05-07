@@ -4,7 +4,9 @@ CFLAGS=-O3 -Wall
 INCLUDEPATH =-I./src/include/
 UNAME_S := $(shell uname -s)
 SRC = $(wildcard ./src/*.cpp)
-all:
+all: game
+
+game:
 ifeq ($(OS),Windows_NT)
 	rd /s /q build
 	@echo "Creating game directory..."
