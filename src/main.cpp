@@ -80,9 +80,9 @@ int main()
 
     std::cout << "a" << std::endl;
     
-    ExportRoomTo(a, "room1.room");
+    data::ExportRoomTo(a, "room1.room");
 
-    Room b = LoadRoomFrom("room1.room");
+    //Room b = LoadRoomFrom("room1.room");
 
     std::cout << "c" << std::endl;
 
@@ -115,8 +115,8 @@ int main()
     World world;
     world.SetPallete(defaultPallete);
     world.TileMapRoomFillTest();
-    world.AddRoom(b);
-    world.AddRoom(b);
+    world.AddRoom(a);
+    world.AddRoom(a);
     world.DrawWorld({(float)camera[0], (float)camera[1], (float)resolution.x, (float)resolution.y});
     
     entityTypes[0].x = TILE_SIZE * 2;
