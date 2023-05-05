@@ -1,5 +1,5 @@
 CC=g++
-BN=VoluntaryBoundary#build name
+BN=FieryTendency#build name
 CFLAGS=-O3 -Wall
 INCLUDEPATH =-I./src/include/
 UNAME_S := $(shell uname -s)
