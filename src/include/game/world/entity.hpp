@@ -17,11 +17,9 @@ class entity {
 
         }
 
-        virtual void update() {
-            for (animator i : animators) i.update();
-            if (applyGravity) {
-                applyForce({0, 10});
-            }
+        virtual void update(float delta_time) {
+            for (animator i : animators) i.update(delta_time);
+            //std::cout << velocity.x * delta_time << std::endl;
         }
 
         void applyForce(sf::Vector2f force) {
@@ -53,11 +51,12 @@ class entity {
         sf::Vector2f velocity = {0.0, 0.0};
         int width, height;
         float x, y;
+        float mass;
         bool alive;
         bool grounded = false;
         std::vector<std::pair<sf::IntRect, bool>> colliders; //the bool is saying whether it's colliding with something or not
         std::vector<std::pair<sf::IntRect, bool>> damageColliders; //same here
-        bool applyGravity = true;
+        bool applyGravity = true, applyFriction = true;
 
     private:
         sf::Texture t;
@@ -68,4 +67,7 @@ namespace wrld {
     float camera_x = 0;
     float camera_y = 0;
     sf::Vector2f camera_center;
+
+    const float G = 10.0;
+    const float FRICTION_COEFFICIENT_NORMAL = 0.7;
 }

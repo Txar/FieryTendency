@@ -55,75 +55,36 @@ class game {
             return colliders;
         }
 
-        void moveEntity(entity *e) {
+        void checkEntityColliders(entity *e) {
             std::vector<sf::IntRect> colliders = surroundingBlockColliders((*e).x, (*e).y);
-            //std::cout << colliders.size() << std::endl;
-            bool collides_x = false;
-            bool collides_y = false;
-            float vel = std::max((*e).velocity.x, (*e).velocity.y);
-            float div = 1;
-            if (vel > wrld::BLOCK_SIZE / 4) {
-                div = vel / (wrld::WORLD_WIDTH / 4); // v / div = small_v
-            }                                        // small_v * div = v
-                                                     // v/small_v = div
-            for (int d = 0; d < div; d++) {
-                for (std::pair<sf::IntRect, bool> i : (*e).colliders) {
-                    sf::IntRect c = i.first;
-                    c.left += (*e).x;
-                    c.top += (*e).y;
-                    if (i.second) continue;
-                    for (sf::IntRect j : colliders) {
-                        if (!collides_x) {
-                            c.left += (*e).velocity.x / div * delta_time;
-                            if (c.intersects(j)) {
-                                if (!((*e).velocity.x < 0 && j.left > c.left)
-                                 && !((*e).velocity.x > 0 && j.left < c.left)) {
-                                    collides_x = true;
-                                }
-                            }
-                            c.left -= (*e).velocity.x / div * delta_time;
-                        }
-                        if (!collides_y) {
-                            c.top += (*e).velocity.y / div * delta_time;
-                            if (c.intersects(j)) {
-                                collides_y = true;
-                            }
-                            c.top -= (*e).velocity.y / div * delta_time;
-                        }
-                        if (collides_x && collides_y) break;
+            for (int i = 0; i < int((*e).colliders.size()); i++) {
+                sf::IntRect c = (*e).colliders.at(i).first;
+                c.left += (*e).x;
+                c.top += (*e).y;
+                sf::RectangleShape s({float(c.width), float(c.height)});
+                s.setPosition(c.left, c.top);
+                s.setFillColor(sf::Color(0, 0, 0, 0));
+                s.setOutlineColor(sf::Color(255, 0, 0));
+                s.setOutlineThickness(1.0);
+                screen_mgr.window.draw(s);
+                (*e).colliders.at(i).second = false;
+                for (sf::IntRect j : colliders) {
+                    if (c.intersects(j)) {
+                        (*e).colliders.at(i).second = true;
+                        break;
                     }
-                    if (collides_x && collides_y) break;
                 }
-                if (!collides_x) {
-                    (*e).x += (*e).velocity.x / div * delta_time;
-                }
-                else {
-                    (*e).velocity.x = 0;
-                }
-
-                (*e).grounded = false;
-                if (!collides_y) {
-                    (*e).y += (*e).velocity.y / div * delta_time;
-                }
-                else if ((*e).velocity.x < 0) {
-                    (*e).grounded = true;
-                }
-                if (collides_y) {
-                    (*e).velocity.y = 0;
-                }
-                if (collides_x && collides_y) break;
             }
         }
     
     public:
-        game() : screen_mgr("Fiery Tendency", 800, 600){
+        game() : screen_mgr("Fiery Tendency", 1280, 720){
             
         }
         
         int main_loop() {
             bool running = true;
             player_entity player(std::string("player"), 128, 128);
-            player.colliders.push_back({sf::IntRect(16, 16, 96, 96), false});
             entity_map.push_back(&player);
             player.x = 512;
             player.y = 128;
@@ -133,7 +94,7 @@ class game {
                 block_map[i] = new block[wrld::WORLD_HEIGHT];
                 for (int j = 0; j < wrld::WORLD_HEIGHT; j++) {
                     block_map[i][j] = block();
-                    if (i == 0 || j == 5) {
+                    if (i == 0 || j == 5 || (j == 2 && i > 7)) {
                         block_map[i][j] = block("block");
                     }
                 }
@@ -146,8 +107,7 @@ class game {
                 wrld::camera_center = {float(player.x), float(player.y)};
                 wrld::camera_x = player.x;
                 wrld::camera_y = player.y;
-                delta_time = clock.getElapsedTime().asSeconds();
-                clock.restart();
+                delta_time = clock.restart().asSeconds();
                 secondTimer += delta_time;
                 if (secondTimer >= 1) {
                     secondTimer = 0;
@@ -156,17 +116,18 @@ class game {
                 }
                 fps++;
 
-                for (int i = 0; i < int(entity_map.size()); i++) {
-                    (*entity_map.at(i)).update();
-                    moveEntity(entity_map.at(i));
-                }
-
                 for (int i = 0; i < wrld::WORLD_WIDTH; i++) { 
-                    for (int j = 0; j < wrld::WORLD_HEIGHT; j++) (block_map[i][j]).update();
+                    for (int j = 0; j < wrld::WORLD_HEIGHT; j++) (block_map[i][j]).update(delta_time);
                 }
                 screen_mgr.clear();
                 screen_mgr.drawBlocks(&block_map); //needs optimization obviously
                 screen_mgr.drawEntities(&entity_map);
+
+                for (int i = 0; i < int(entity_map.size()); i++) {
+                    (*entity_map.at(i)).update(delta_time);
+                    checkEntityColliders(entity_map.at(i));
+                }
+
                 running = screen_mgr.update();
             }
             return 0;

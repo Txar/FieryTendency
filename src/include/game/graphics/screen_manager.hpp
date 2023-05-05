@@ -9,13 +9,16 @@
 class screen_manager {
     private:
         int screen_height, screen_width;
-        sf::RenderWindow window;
+        
         sf::View camera;
 
     public:
+        sf::RenderWindow window;
+
         screen_manager(std::string title, int _screen_width, int _screen_height) : window(sf::VideoMode(_screen_width, _screen_height), title) {
             screen_width = _screen_width;
             screen_height = _screen_height;
+            window.setFramerateLimit(200);
         }
 
         ~screen_manager() {
@@ -43,12 +46,11 @@ class screen_manager {
             blocks_buffer.create(screen_width, screen_height);
             blocks_buffer.clear(sf::Color(0, 0, 0, 0));
 
-            for (int i = 0; i < wrld::WORLD_WIDTH; i++) { 
-                for (int j = 0; j < wrld::WORLD_HEIGHT; j++) {
-                    //std::cout << i << " " << j << std::endl;
-                    if (!(*blocks)[i][j].visible) continue;
+            for (int i = (wrld::camera_x - screen_width/2)/wrld::BLOCK_SIZE; i < (wrld::camera_x + screen_width/2)/wrld::BLOCK_SIZE + 2; i++) { 
+                if (i < 0 || i >= wrld::WORLD_WIDTH) continue;
+                for (int j = (wrld::camera_y - screen_height/2)/wrld::BLOCK_SIZE; j < (wrld::camera_y + screen_height/2)/wrld::BLOCK_SIZE + 2; j++) {
+                    if (j < 0 || j > wrld::WORLD_HEIGHT - 1 || !(*blocks)[i][j].visible) continue;
                     sf::Sprite s = (*blocks)[i][j].draw();
-                    //s.setPosition(sf::Vector2f(i * wrld::BLOCK_SIZE + window.getView().getViewport().left, j * wrld::BLOCK_SIZE + window.getView().getViewport().top));
                     s.setPosition(sf::Vector2f(i * wrld::BLOCK_SIZE - float(wrld::camera_x + 64 - screen_width/2),
                                                j * wrld::BLOCK_SIZE - float(wrld::camera_y + 64 - screen_height/2)));
                     blocks_buffer.draw(s);

@@ -15,8 +15,8 @@ class block {
             }
         }
 
-        void update() {
-            if (visible) anim.update();
+        void update(float delta_time) {
+            if (visible) anim.update(delta_time);
         }
 
         sf::Sprite draw() {

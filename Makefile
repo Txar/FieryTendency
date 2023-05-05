@@ -8,7 +8,7 @@ all: game
 
 game:
 ifeq ($(OS),Windows_NT)
-	rd /s /q build
+	-rd /s /q build
 	@echo "Creating game directory..."
 	mkdir build
 	cd build && \

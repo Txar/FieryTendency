@@ -31,9 +31,9 @@ class animator {
             height = _height;
         }
 
-        void update() {
+        void update(float delta_time) {
             if (animated) {
-                progress += speed;
+                progress += delta_time;
                 if (progress >= 1.0) {
                     progress = progress - 1.0;
                     if (frame == frames) {
