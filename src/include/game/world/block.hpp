@@ -5,10 +5,12 @@
 
 class block {
     public:
-        bool visible = true;
-        bool solid = true;
+        bool visible = true, solid = true;
+        std::string name;
+        animator anim;
 
-        block(std::string name = "none") : anim(name) {
+        block(std::string _name = "none") : anim(_name) {
+            name = _name;
             if (name == "none") {
                 visible = false;
                 solid = false;
@@ -23,9 +25,7 @@ class block {
             return anim.getSprite();
         }
 
-    private:
-        animator anim;
-        std::string name;
+    protected:
         std::vector<sf::IntRect> collider;
 };
 

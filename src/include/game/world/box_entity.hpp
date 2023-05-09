@@ -7,26 +7,26 @@
 #pragma once
 
 class box_entity : public entity {
-    private:
+    protected:
         void applyMovement(float delta_time) {
-            if (fabs(velocity.x) < 20.0) velocity.x = 0.0;
+            if (velocity.x != 0 && fabs(velocity.x * delta_time) < 0.02) velocity.x = 0.0;
             
             if (velocity.x < 0.0) {
-                if (bottomCollider) applyForce({wrld::FRICTION_COEFFICIENT_NORMAL * mass * wrld::G, 0});
-                if (!leftCollider) x += velocity.x * delta_time;
+                if (bottomCollider && applyFriction) applyForce({wrld::FRICTION_COEFFICIENT_NORMAL * mass * wrld::G, 0}, delta_time);
+                if (!leftCollider)   x += (velocity.x * delta_time) + ((previousVelocity.x - velocity.x) * delta_time * delta_time) / 2;
                 else velocity.x = 0;
             }
             if (velocity.x > 0.0) {
-                if (bottomCollider) applyForce({-wrld::FRICTION_COEFFICIENT_NORMAL * mass * wrld::G, 0});
-                if (!rightCollider) x += velocity.x * delta_time;
+                if (bottomCollider && applyFriction) applyForce({-wrld::FRICTION_COEFFICIENT_NORMAL * mass * wrld::G, 0}, delta_time);
+                if (!rightCollider)  x += (velocity.x * delta_time) + ((previousVelocity.x - velocity.x) * delta_time * delta_time) / 2;
                 else velocity.x = 0;
             }
             if (velocity.y < 0.0) {
-                if (!topCollider) y += velocity.y * delta_time;
+                if (!topCollider)    y += (velocity.y * delta_time) + ((previousVelocity.y - velocity.y) * delta_time * delta_time) / 2;
                 else velocity.y = 0;
             }
             if (velocity.y > 0.0) {
-                if (!bottomCollider) y += velocity.y * delta_time;
+                if (!bottomCollider) y += (velocity.y * delta_time) + ((previousVelocity.y - velocity.y) * delta_time * delta_time) / 2;
                 else velocity.y = 0;
             }
         }
@@ -34,17 +34,20 @@ class box_entity : public entity {
     public:
         bool leftCollider, rightCollider, topCollider, bottomCollider;
 
-        box_entity(std::string name, int _width, int _height) : entity {name, _width, _height} {
+        box_entity(entity &e) : entity{e} {
+            
+        }
+
+        box_entity(std::string name, int _width, int _height, std::string _type = "boxEntity") : entity {name, _width, _height, 2.0, _type} {
             colliders = {
                 {{0, 8, 8, height - 16}, false}, //left
                 {{width - 8, 8, 8, height - 16}, false}, //right
                 {{8, 0, width - 16, 8}, false}, //top
                 {{8, height, width - 16, 8}, false} //bottom
             };
-            mass = 2.0;
         };
 
-        void update(float delta_time) {
+        virtual void update(float delta_time) override {
             entity::update(delta_time);
 
             leftCollider = colliders.at(0).second;
@@ -52,8 +55,8 @@ class box_entity : public entity {
             topCollider = colliders.at(2).second;
             bottomCollider = colliders.at(3).second;
 
-            applyMovement(delta_time);
-
-            if (applyGravity) applyForce({0, wrld::G * mass});
+            //applyMovement(delta_time);
+            previousVelocity = velocity;
+            if (applyGravity) applyForce({0, wrld::G * mass}, delta_time);
         }
 };

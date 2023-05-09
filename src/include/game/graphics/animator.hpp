@@ -15,6 +15,7 @@ class animator {
         int height;
         float progress = 0;
         bool reverse = false;
+        bool flipSprite = false;
 
         animator(std::string _name) {
             name = _name;
@@ -33,10 +34,10 @@ class animator {
 
         void update(float delta_time) {
             if (animated) {
-                progress += delta_time;
+                progress += delta_time * speed;
                 if (progress >= 1.0) {
                     progress = progress - 1.0;
-                    if (frame == frames) {
+                    if (frame == frames - 1) {
                         if (pingpong) {
                             reverse = true;
                             frame--;
@@ -59,10 +60,10 @@ class animator {
 
         sf::Sprite getSprite() {
             if (animated) {
-                return texture_mgr.get_sprite(name, frame, width, height);
+                return texture_mgr.get_sprite(name, frame, width, height, flipSprite);
             }
             else {
-                return texture_mgr.get_sprite(name);
+                return texture_mgr.get_sprite(name, flipSprite);
             }
         }
 };

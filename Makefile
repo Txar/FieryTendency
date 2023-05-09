@@ -18,6 +18,7 @@ ifeq ($(OS),Windows_NT)
 	mkdir data
 	@echo "Copying assets..."
 	-copy .\src\sprites\export\* build\$(BN)\assets
+	-copy .\src\fonts\* build\$(BN)\assets
 	-copy .\src\dlls\* build\$(BN)
 	@echo "Building binaries..."
 	$(CC) -o "build/$(BN)/$(BN).exe" $(SRC) $(CFLAGS) $(INCLUDEPATH) -L src/lib/ -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
@@ -28,6 +29,7 @@ ifeq ($(UNAME_S),Linux)
 	mkdir -p build/$(BN)/assets
 	mkdir -p build/$(BN)/data
 	cp ./src/sprites/export/* ./build/$(BN)/assets/
+	cp ./src/fonts/* ./build/$(BN)/assets/
 	cp ./src/so/*.so* ./build/$(BN)
 	$(CC) -o ./build/$(BN)/$(BN).bin $(SRC) $(CFLAGS) $(INCLUDEPATH) -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -L./src/so
 endif

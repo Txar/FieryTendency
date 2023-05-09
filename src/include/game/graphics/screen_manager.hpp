@@ -9,7 +9,7 @@
 class screen_manager {
     private:
         int screen_height, screen_width;
-        
+        sf::Font font;
         sf::View camera;
 
     public:
@@ -18,14 +18,19 @@ class screen_manager {
         screen_manager(std::string title, int _screen_width, int _screen_height) : window(sf::VideoMode(_screen_width, _screen_height), title) {
             screen_width = _screen_width;
             screen_height = _screen_height;
-            window.setFramerateLimit(200);
+            camera.setSize({float(screen_width), float(screen_height)});
+            window.setFramerateLimit(60);
+
+            if (!font.loadFromFile("assets/Roboto-Regular.ttf")){
+                std::cout << "Font missing!" << std::endl;
+            }
         }
 
         ~screen_manager() {
             window.close();
         }
 
-        void drawEntities(std::vector<entity*> *entities) {
+        void drawEntities(std::vector<entity*> *entities, bool draw_colliders = false) {
             sf::RenderTexture entity_buffer;
             entity_buffer.create(screen_width, screen_height);
             entity_buffer.clear(sf::Color(0, 0, 0, 0));
@@ -34,6 +39,20 @@ class screen_manager {
                 s.setPosition(sf::Vector2f(s.getPosition().x - float(wrld::camera_x + 64 - screen_width/2), 
                                            s.getPosition().y - float(wrld::camera_y + 64 - screen_height/2)));
                 entity_buffer.draw(s);
+                if (draw_colliders) {
+                    for (int j = 0; j < int((*i).colliders.size()); j++){
+                        sf::IntRect c = (*i).colliders.at(j).first;
+                        c.left += (*i).x;
+                        c.top += (*i).y;
+                        sf::RectangleShape s({float(c.width), float(c.height)});
+                        s.setPosition(c.left - float(wrld::camera_x + 64 - screen_width/2), 
+                                      c.top - float(wrld::camera_y + 64 - screen_height/2));
+                        s.setFillColor(sf::Color(0, 0, 0, 0));
+                        s.setOutlineColor(sf::Color(255, 0, 0));
+                        s.setOutlineThickness(1.0);
+                        entity_buffer.draw(s);
+                    }
+                }
             }
             entity_buffer.display();
             sf::Sprite s(entity_buffer.getTexture());
@@ -67,7 +86,20 @@ class screen_manager {
         }
 
         bool update() {
-            camera.reset({float(wrld::camera_x + 64 - screen_width/2), float(wrld::camera_y + 64 - screen_height/2), float(screen_width), float(screen_height)}); // wrld::camera_center, {float(screen_width), float(screen_height)}
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1)) window.setFramerateLimit(60);
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2)) window.setFramerateLimit(200);
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3)) window.setFramerateLimit(30);
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num4)) window.setFramerateLimit(45);
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num5)) window.setFramerateLimit(50);
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num6)) window.setFramerateLimit(55);
+
+            sf::Text text(std::to_string(wrld::fps) + " FPS", font, 16);
+            text.setFillColor(sf::Color(255, 0, 0));
+            text.setPosition(sf::Vector2f(camera.getCenter().x - screen_width / 2, camera.getCenter().y - screen_height / 2));
+            window.draw(text);
+
+            camera.setCenter({float(wrld::camera_x + 64), float(wrld::camera_y + 64)});
+            //camera.reset({float(wrld::camera_x + 64 - screen_width/2), float(wrld::camera_y + 64 - screen_height/2), float(screen_width), float(screen_height)}); // wrld::camera_center, {float(screen_width), float(screen_height)}
             window.setView(camera);
             em::update(&window);
             for (sf::Event i : em::events) {
