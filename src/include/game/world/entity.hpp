@@ -33,7 +33,8 @@ class entity {
         }
 
         virtual void update(float delta_time) {
-            for (int i = 0; i < int(animators.size()); i++) animators.at(i).update(delta_time);
+            hasChanged = false;
+            for (int i = 0; i < int(animators.size()); i++) hasChanged += animators.at(i).update(delta_time);
             //std::cout << velocity.x * delta_time << std::endl;
         }
 
@@ -56,14 +57,17 @@ class entity {
         }
 
         sf::Sprite draw() {
-            sf::RenderTexture rt;
-            rt.create(width, height);
-            rt.clear(sf::Color(0, 0, 0, 0));
-            for (animator i : animators) {
-                rt.draw(i.getSprite());
+            if (hasChanged || !textureCreated) {
+                sf::RenderTexture rt;
+                rt.create(width, height);
+                rt.clear(sf::Color(0, 0, 0, 0));
+                for (animator i : animators) {
+                    rt.draw(i.getSprite());
+                }
+                rt.display();
+                t = rt.getTexture();
+                textureCreated = true;
             }
-            rt.display();
-            t = rt.getTexture();
             sf::Sprite s(t);
             s.setPosition({x, y});
             return s;
@@ -77,12 +81,14 @@ class entity {
         float mass;
         bool alive;
         bool grounded = false;
+        bool hasChanged = false;
+        bool textureCreated = false;
         std::vector<std::pair<sf::IntRect, bool>> colliders; //the bool is saying whether it's colliding with something or not
         std::vector<std::pair<sf::IntRect, bool>> damageColliders; //same here
         bool applyGravity = true, applyFriction = true;
         std::string type;
+        std::vector<animator> animators;
 
     protected:
         sf::Texture t;
-        std::vector<animator> animators;
 };

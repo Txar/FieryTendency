@@ -3,6 +3,13 @@
 
 #pragma once
 
+namespace wrld {
+    const int BLOCK_SIZE = 64;
+
+    const int WORLD_WIDTH = 128;
+    const int WORLD_HEIGHT = 128;
+}
+
 class block {
     public:
         bool visible = true, solid = true;
@@ -15,6 +22,8 @@ class block {
                 visible = false;
                 solid = false;
             }
+
+            collider = sf::IntRect(0, 0, wrld::BLOCK_SIZE, wrld::BLOCK_SIZE);
         }
 
         void update(float delta_time) {
@@ -25,13 +34,5 @@ class block {
             return anim.getSprite();
         }
 
-    protected:
-        std::vector<sf::IntRect> collider;
+        sf::IntRect collider;
 };
-
-namespace wrld {
-    const int BLOCK_SIZE = 64;
-
-    const int WORLD_WIDTH = 128;
-    const int WORLD_HEIGHT = 128;
-}

@@ -13,7 +13,7 @@ class animator {
         bool animated;
         int width;
         int height;
-        float progress = 0;
+        float progress = 0.0;
         bool reverse = false;
         bool flipSprite = false;
 
@@ -32,7 +32,7 @@ class animator {
             height = _height;
         }
 
-        void update(float delta_time) {
+        bool update(float delta_time) {
             if (animated) {
                 progress += delta_time * speed;
                 if (progress >= 1.0) {
@@ -54,8 +54,10 @@ class animator {
                         if (pingpong) frame = (reverse) ? frame - 1 : frame + 1;
                         else frame++;
                     }
+                    return true;
                 }
             }
+            return false;
         }
 
         sf::Sprite getSprite() {

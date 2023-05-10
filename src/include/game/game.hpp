@@ -52,7 +52,10 @@ class game {
                 for (int j = y - radius; j < y + radius; j++) {
                     if (!isInBoundsTile(0, j)) continue;
                     if (block_map[i][j].solid) {
-                        colliders.push_back(blockColliderTile(i, j));
+                        sf::IntRect c = block_map[i][j].collider;
+                        c.left += i * wrld::BLOCK_SIZE;
+                        c.top += j * wrld::BLOCK_SIZE;
+                        colliders.push_back(c);
                     }
                 }
             }
@@ -81,6 +84,9 @@ class game {
         }
         
         int main_loop() {
+            int c = 0;
+            alive_entity_mgr.addEntity(wrld::entity_mgr.get_ptr("player1"));
+
             bool running = true;
 
             block test_block("test_anim");
@@ -117,7 +123,6 @@ class game {
                     sim_delta_time = 1.0 / frame;
                     fps = frame;
                     wrld::fps = fps;
-                    std::cout << delta_time << std::endl;
                     std::cout << fps << " fps" << std::endl;
                     frame = 0;
                 }
@@ -133,6 +138,17 @@ class game {
                 screen_mgr.clear();
                 screen_mgr.drawBlocks(&block_map); //needs optimization obviously
                 screen_mgr.drawEntities(&alive_entity_mgr.entities, draw_colliders);
+
+                for (sf::Event e : em::events) {
+                    if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::Key::R) {
+                        alive_entity_mgr.addEntity(wrld::entity_mgr.get_ptr("box"), "box" + std::to_string(c));
+                        alive_entity_mgr.box_entities.at("box" + std::to_string(c)).doApplyMovement = true;
+                        alive_entity_mgr.box_entities.at("box" + std::to_string(c)).x = wrld::camera_x;
+                        alive_entity_mgr.box_entities.at("box" + std::to_string(c)).y = wrld::camera_y;
+                        std::cout << alive_entity_mgr.entities.size() << std::endl;
+                        c++;
+                    }
+                }
 
                 entity *e;
                 while (alive_entity_mgr.iter(&e)) {
@@ -153,10 +169,9 @@ class game {
                     else {
                         checkEntityColliders(e);
                         (*e).update(delta_time);
-                    }
-
-                    running = screen_mgr.update();
+                    } 
                 }
+                running = screen_mgr.update();
             }
             return 0;
         }

@@ -2,10 +2,6 @@
 
 #pragma once
 
-namespace em {
-    
-}
-
 class entity_manager {
     public:
         std::map<std::string, entity> base_entities;
@@ -21,31 +17,32 @@ class entity_manager {
                 return false;
             }
             else {
+                (*e) = entities.at(iterator);
                 iterator++;
-                (*e) = entities[iterator];
                 return true;
             }
         }
 
         void update(float delta_time) {
-            for (auto i : base_entities) base_entities[i.first].update(delta_time);
-            for (auto i : box_entities) box_entities[i.first].update(delta_time);
-            for (auto i : player_entities) player_entities[i.first].update(delta_time);
+            for (auto i : base_entities) base_entities.at(i.first).update(delta_time);
+            for (auto i : box_entities) box_entities.at(i.first).update(delta_time);
+            for (auto i : player_entities) player_entities.at(i.first).update(delta_time);
         }
 
-        bool addEntity(entity *e) {
-            if (exists((*e).name)) return true;
+        bool addEntity(entity *e, std::string name = "") {
+            if (name == "") name = (*e).name;
+            if (exists(name)) return true;
             if ((*e).type == "baseEntity") {
-                base_entities.insert({(*e).name, *e});
-                entities.push_back(&base_entities[(*e).name]);
+                base_entities.insert({name, *e});
+                entities.push_back(&base_entities.at(name));
             }
             else if ((*e).type == "boxEntity") {
-                box_entities.insert({(*e).name, box_entity(*e)});
-                entities.push_back(&box_entities[(*e).name]);
+                box_entities.insert({name, box_entity(*e)});
+                entities.push_back(&box_entities.at(name));
             }
             else if ((*e).type == "playerEntity") {
-                player_entities.insert({(*e).name, player_entity(*e)});
-                entities.push_back(&player_entities[(*e).name]);
+                player_entities.insert({name, player_entity(*e)});
+                entities.push_back(&player_entities.at(name));
             }
             return false;
         }
@@ -66,16 +63,21 @@ class entity_manager {
 
         entity *get_ptr(std::string name) {
             std::string t = type(name);
-            if (t == "baseEntity") return &base_entities[name];
-            if (t == "boxEntity") return &box_entities[name];
-            if (t == "playerEntity") return &player_entities[name];
+            if (t == "baseEntity") return &base_entities.at(name);
+            if (t == "boxEntity") return &box_entities.at(name);
+            if (t == "playerEntity") return &player_entities.at(name);
             else return &none;
         }
 
-        entity_manager(bool load = true) {
+        entity_manager(bool load = false) {
             if (load) {
                 player_entity p = player_entity("player1", 128, 128);
                 addEntity(&p);
+                box_entity e = box_entity("box", 128, 128);
+                e.animators.push_back(animator("Anastasia-run", 128, 128, 6, 12.0));
+                e.applyGravity = true;
+                e.doApplyMovement = true;
+                addEntity(&e);
             }
         }
 };

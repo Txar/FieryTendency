@@ -9,32 +9,32 @@
 class box_entity : public entity {
     protected:
         void applyMovement(float delta_time) {
-            if (velocity.x != 0 && fabs(velocity.x * delta_time) < 0.02) velocity.x = 0.0;
-            
-            if (velocity.x < 0.0) {
-                if (bottomCollider && applyFriction) applyForce({wrld::FRICTION_COEFFICIENT_NORMAL * mass * wrld::G, 0}, delta_time);
-                if (!leftCollider)   x += (velocity.x * delta_time) + ((previousVelocity.x - velocity.x) * delta_time * delta_time) / 2;
-                else velocity.x = 0;
+                if (velocity.x != 0 && fabs(velocity.x * delta_time) < 0.02) velocity.x = 0.0;
+                if (velocity.x < 0.0) {
+                    if (bottomCollider && applyFriction) applyForce({wrld::FRICTION_COEFFICIENT_NORMAL * mass * wrld::G, 0}, delta_time);
+                    if (!leftCollider)   x += (velocity.x * delta_time) + ((previousVelocity.x - velocity.x) * delta_time * delta_time) / 2;
+                    else velocity.x = 0;
+                }
+                if (velocity.x > 0.0) {
+                    if (bottomCollider && applyFriction) applyForce({-wrld::FRICTION_COEFFICIENT_NORMAL * mass * wrld::G, 0}, delta_time);
+                    if (!rightCollider)  x += (velocity.x * delta_time) + ((previousVelocity.x - velocity.x) * delta_time * delta_time) / 2;
+                    else velocity.x = 0;
+                }
+                if (velocity.y < 0.0) {
+                    if (!topCollider)    y += (velocity.y * delta_time) + ((previousVelocity.y - velocity.y) * delta_time * delta_time) / 2;
+                    else velocity.y = 0;
+                }
+                if (velocity.y > 0.0) {
+                    if (!bottomCollider) y += (velocity.y * delta_time) + ((previousVelocity.y - velocity.y) * delta_time * delta_time) / 2;
+                    else velocity.y = 0;
+                }
             }
-            if (velocity.x > 0.0) {
-                if (bottomCollider && applyFriction) applyForce({-wrld::FRICTION_COEFFICIENT_NORMAL * mass * wrld::G, 0}, delta_time);
-                if (!rightCollider)  x += (velocity.x * delta_time) + ((previousVelocity.x - velocity.x) * delta_time * delta_time) / 2;
-                else velocity.x = 0;
-            }
-            if (velocity.y < 0.0) {
-                if (!topCollider)    y += (velocity.y * delta_time) + ((previousVelocity.y - velocity.y) * delta_time * delta_time) / 2;
-                else velocity.y = 0;
-            }
-            if (velocity.y > 0.0) {
-                if (!bottomCollider) y += (velocity.y * delta_time) + ((previousVelocity.y - velocity.y) * delta_time * delta_time) / 2;
-                else velocity.y = 0;
-            }
-        }
 
     public:
         bool leftCollider, rightCollider, topCollider, bottomCollider;
+        bool doApplyMovement = false;
 
-        box_entity(entity &e) : entity{e} {
+        box_entity(entity &e) : entity(e) {
             
         }
 
@@ -47,7 +47,7 @@ class box_entity : public entity {
             };
         };
 
-        virtual void update(float delta_time) override {
+        virtual void update(float delta_time) {
             entity::update(delta_time);
 
             leftCollider = colliders.at(0).second;
@@ -55,8 +55,8 @@ class box_entity : public entity {
             topCollider = colliders.at(2).second;
             bottomCollider = colliders.at(3).second;
 
-            //applyMovement(delta_time);
             previousVelocity = velocity;
             if (applyGravity) applyForce({0, wrld::G * mass}, delta_time);
+            if (doApplyMovement) applyMovement(delta_time);
         }
 };

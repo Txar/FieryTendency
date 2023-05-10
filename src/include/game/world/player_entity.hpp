@@ -20,7 +20,7 @@ class player_entity : public box_entity {
 
         }
 
-        player_entity(std::string name, int _width, int _height, std::string _type = "player") : box_entity {name, _width, _height, _type} {
+        player_entity(std::string name, int _width, int _height, std::string _type = "playerEntity") : box_entity {name, _width, _height, _type} {
             animators.push_back(animator("none", width, height, 6));
             colliders = {
                 {{0, 16, 8, height - 32}, false}, //left
@@ -32,7 +32,7 @@ class player_entity : public box_entity {
             //applyFriction = false;
         };
 
-        virtual void update(float delta_time) override {
+        virtual void update(float delta_time) {
             box_entity::update(delta_time);
             //std::cout << velocity.x << std::endl;
             if (abs(velocity.x) > 0.0) {
@@ -51,15 +51,18 @@ class player_entity : public box_entity {
                 animators.at(0).name = "Anastasia-Fall";
                 animators.at(0).animated = false;
                 animators.at(0).frame = 0;
+                hasChanged = true;
             }
             else if (!running) {
                 animators.at(0).name = "Anastasia-Stand";
                 animators.at(0).animated = false;
                 animators.at(0).frame = 0;
+                hasChanged = true;
             }
             else {
                 animators.at(0).name = "Anastasia-Run";
                 animators.at(0).animated = true;
+                hasChanged = true;
             }
 
             if (abs(velocity.x) < maxRunningVelocity * wrld::FORCE_MULTIPLIER) {

@@ -92,6 +92,7 @@ class screen_manager {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num4)) window.setFramerateLimit(45);
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num5)) window.setFramerateLimit(50);
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num6)) window.setFramerateLimit(55);
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num7)) window.setFramerateLimit(0);
 
             sf::Text text(std::to_string(wrld::fps) + " FPS", font, 16);
             text.setFillColor(sf::Color(255, 0, 0));
