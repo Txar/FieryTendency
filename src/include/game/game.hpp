@@ -47,14 +47,15 @@ class game {
                 }
                 frame++;
 
-                bool draw_colliders = false;
+                bool draw_colliders = true;
 
                 em::updateGlobalEvents();
 
                 w.update(delta_time, fps);
 
                 screen_mgr.clear();
-                screen_mgr.drawBlocks(&w.block_map); //needs optimization obviously
+
+                screen_mgr.draw_blocks(w.block_mgr.tilemap); //needs optimization obviously
                 screen_mgr.drawEntities(&w.alive_entity_mgr.entities, draw_colliders);
 
                 w.resetCamera();

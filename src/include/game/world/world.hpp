@@ -2,11 +2,12 @@
 
 #include "game/math/custom_round.hpp"
 #include "game/content/entity_manager.hpp"
+#include "game/content/block_manager.hpp"
 
 class world {
     public:
         entity_manager alive_entity_mgr;
-        block **block_map;
+        block_manager block_mgr;
 
     public:
         bool isInBounds(int x, int y) {
@@ -37,8 +38,8 @@ class world {
                 if (!isInBoundsTile(i, 0)) continue;
                 for (int j = y - radius; j < y + radius; j++) {
                     if (!isInBoundsTile(0, j)) continue;
-                    if (block_map[i][j].solid) {
-                        sf::IntRect c = block_map[i][j].collider;
+                    if (block_mgr.is_solid(i, j)) {
+                        sf::IntRect c = block_mgr.tilemap[i][j]->collider;
                         c.left += i * wrld::BLOCK_SIZE;
                         c.top += j * wrld::BLOCK_SIZE;
                         colliders.push_back(c);
@@ -64,31 +65,12 @@ class world {
             }
         }
 
-        world() {
+        world() : block_mgr(true) {
             em::player_name = alive_entity_mgr.available_name("player");
             alive_entity_mgr.add_entity(wrld::entity_mgr.get_ptr("player"), em::player_name);
-
-            block test_block("test_anim");
-            test_block.anim.animated = true;
-            test_block.anim.frames = 4;
-            test_block.anim.speed = 8.0;
-            test_block.anim.height = 64;
-            test_block.anim.width = 64;
-            test_block.anim.pingpong = false;
-
-            block_map = new block* [wrld::WORLD_WIDTH];
-            for (int i = 0; i < wrld::WORLD_WIDTH; i++) {
-                block_map[i] = new block[wrld::WORLD_HEIGHT];
-                for (int j = 0; j < wrld::WORLD_HEIGHT; j++) {
-                    block_map[i][j] = block();
-                    if (i == 0 || j == 5 || (j == 2 && i > 7)) {
-                        block_map[i][j] = test_block;
-                    }
-                }
-            }
         }
 
-        bool update(float delta_time, int fps = -1) {
+        void update(float delta_time, int fps = -1) {
             if (fps == -1) fps = 1/delta_time;
             
             entity *e;
@@ -114,9 +96,7 @@ class world {
                 e->after();
             }
 
-            for (int i = 0; i < wrld::WORLD_WIDTH; i++) { 
-                for (int j = 0; j < wrld::WORLD_HEIGHT; j++) (block_map[i][j]).update(delta_time);
-            }
+            block_mgr.update(delta_time);
         }
 
         void resetCamera() {
