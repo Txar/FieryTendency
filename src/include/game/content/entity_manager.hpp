@@ -29,9 +29,9 @@ class entity_manager {
             for (auto i : player_entities) player_entities.at(i.first).update(delta_time);
         }
 
-        bool addEntity(entity *e, std::string name = "") {
+        bool add_entity(entity *e, std::string name = "") {
             if (name == "") name = (*e).name;
-            if (exists(name)) return true;
+            if (exists(name)) return false;
             if ((*e).type == "baseEntity") {
                 base_entities.insert({name, *e});
                 entities.push_back(&base_entities.at(name));
@@ -44,7 +44,15 @@ class entity_manager {
                 player_entities.insert({name, player_entity(*e)});
                 entities.push_back(&player_entities.at(name));
             }
-            return false;
+            return true;
+        }
+
+        std::string available_name(std::string preferredName) {
+            int i = 0;
+            while (exists(preferredName + std::to_string(i))) {
+                i++;
+            }
+            return preferredName + std::to_string(i);
         }
 
         bool exists(std::string name) {
@@ -71,13 +79,13 @@ class entity_manager {
 
         entity_manager(bool load = false) {
             if (load) {
-                player_entity p = player_entity("player1", 128, 128);
-                addEntity(&p);
+                player_entity p = player_entity("player", 128, 128);
+                add_entity(&p);
                 box_entity e = box_entity("box", 128, 128);
                 e.animators.push_back(animator("Anastasia-run", 128, 128, 6, 12.0));
                 e.applyGravity = true;
                 e.doApplyMovement = true;
-                addEntity(&e);
+                add_entity(&e);
             }
         }
 };

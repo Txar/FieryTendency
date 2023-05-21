@@ -21,7 +21,7 @@ ifeq ($(OS),Windows_NT)
 	-copy .\src\fonts\* build\$(BN)\assets
 	-copy .\src\dlls\* build\$(BN)
 	@echo "Building binaries..."
-	$(CC) -o "build/$(BN)/$(BN).exe" $(SRC) $(CFLAGS) $(INCLUDEPATH) -L src/lib/ -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
+	$(CC) -o "build/$(BN)/$(BN).exe" $(SRC) $(CFLAGS) $(INCLUDEPATH) -L src/lib/ -lsfml-network -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
 endif
 ifeq ($(UNAME_S),Linux)
 	rm -rf ./build/*
@@ -31,7 +31,7 @@ ifeq ($(UNAME_S),Linux)
 	cp ./src/sprites/export/* ./build/$(BN)/assets/
 	cp ./src/fonts/* ./build/$(BN)/assets/
 	cp ./src/so/*.so* ./build/$(BN)
-	$(CC) -o ./build/$(BN)/$(BN).bin $(SRC) $(CFLAGS) $(INCLUDEPATH) -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -L./src/so
+	$(CC) -o ./build/$(BN)/$(BN).bin $(SRC) $(CFLAGS) $(INCLUDEPATH) -lsfml-network -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -L./src/so
 endif
 ifeq ($(UNAME_S),Darwin)
 	@echo "Buy normal pc"

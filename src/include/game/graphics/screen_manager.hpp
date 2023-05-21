@@ -35,15 +35,15 @@ class screen_manager {
             entity_buffer.create(screen_width, screen_height);
             entity_buffer.clear(sf::Color(0, 0, 0, 0));
             for (entity * i : *entities) {
-                sf::Sprite s = (*i).draw();
+                sf::Sprite s = i->draw();
                 s.setPosition(sf::Vector2f(s.getPosition().x - float(wrld::camera_x + 64 - screen_width/2), 
                                            s.getPosition().y - float(wrld::camera_y + 64 - screen_height/2)));
                 entity_buffer.draw(s);
                 if (draw_colliders) {
-                    for (int j = 0; j < int((*i).colliders.size()); j++){
-                        sf::IntRect c = (*i).colliders.at(j).first;
-                        c.left += (*i).x;
-                        c.top += (*i).y;
+                    for (int j = 0; j < int(i->colliders.size()); j++){
+                        sf::IntRect c = i->colliders.at(j).first;
+                        c.left += i->x;
+                        c.top += i->y;
                         sf::RectangleShape s({float(c.width), float(c.height)});
                         s.setPosition(c.left - float(wrld::camera_x + 64 - screen_width/2), 
                                       c.top - float(wrld::camera_y + 64 - screen_height/2));
@@ -65,7 +65,7 @@ class screen_manager {
             blocks_buffer.create(screen_width, screen_height);
             blocks_buffer.clear(sf::Color(0, 0, 0, 0));
 
-            for (int i = (wrld::camera_x - screen_width/2)/wrld::BLOCK_SIZE; i < (wrld::camera_x + screen_width/2)/wrld::BLOCK_SIZE + 2; i++) { 
+            for (int i = (wrld::camera_x - screen_width/2 - 1)/wrld::BLOCK_SIZE; i < (wrld::camera_x + screen_width/2 + 1)/wrld::BLOCK_SIZE + 2; i++) { 
                 if (i < 0 || i >= wrld::WORLD_WIDTH) continue;
                 for (int j = (wrld::camera_y - screen_height/2)/wrld::BLOCK_SIZE; j < (wrld::camera_y + screen_height/2)/wrld::BLOCK_SIZE + 2; j++) {
                     if (j < 0 || j > wrld::WORLD_HEIGHT - 1 || !(*blocks)[i][j].visible) continue;
@@ -93,6 +93,7 @@ class screen_manager {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num5)) window.setFramerateLimit(50);
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num6)) window.setFramerateLimit(55);
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num7)) window.setFramerateLimit(0);
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) return false;
 
             sf::Text text(std::to_string(wrld::fps) + " FPS", font, 16);
             text.setFillColor(sf::Color(255, 0, 0));

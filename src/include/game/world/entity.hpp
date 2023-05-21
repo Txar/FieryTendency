@@ -56,6 +56,10 @@ class entity {
             y = 0;
         }
 
+        void after() { //called after update
+
+        }
+
         sf::Sprite draw() {
             if (hasChanged || !textureCreated) {
                 sf::RenderTexture rt;
