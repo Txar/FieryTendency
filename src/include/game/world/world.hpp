@@ -66,8 +66,14 @@ class world {
         }
 
         world() : block_mgr(true) {
+            //summonPlayer();
+        }
+
+        void summonPlayer() {
             em::player_name = alive_entity_mgr.available_name("player");
             alive_entity_mgr.add_entity(wrld::entity_mgr.get_ptr("player"), em::player_name);
+            entity *p = alive_entity_mgr.get_ptr(em::player_name);
+            p->name = em::player_name;
         }
 
         void update(float delta_time, int fps = -1) {

@@ -20,7 +20,6 @@ namespace em { //so called "event manager"
         for (auto i : kb::binds) {
             if (sf::Keyboard::isKeyPressed(i.first)) {
                 srvr::event ev(player_name, i.second);
-                //std::cout << i.first << " " << i.second << std::endl;
                 e->dump(&ev);
             }
         }

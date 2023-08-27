@@ -2,6 +2,7 @@
 #include "game/io/events.hpp"
 #include "game/world/entity.hpp"
 #include "game/world/block.hpp"
+#include "game/io/debug.hpp"
 #include <iostream>
 
 #pragma once
@@ -95,7 +96,8 @@ class screen_manager {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num7)) window.setFramerateLimit(0);
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) return false;
 
-            sf::Text text(std::to_string(wrld::fps) + " FPS", font, 16);
+            sf::Text text(std::to_string(wrld::fps) + " FPS\n" + de.console, font, 16);
+
             text.setFillColor(sf::Color(255, 0, 0));
             text.setPosition(sf::Vector2f(camera.getCenter().x - screen_width / 2, camera.getCenter().y - screen_height / 2));
             window.draw(text);

@@ -14,7 +14,10 @@ class player_entity : public box_entity {
             srvr::event e;
             pressingRight = false, pressingLeft = false, pressingJump = false;
             while (srvr::eventPool.iter(&e)) {
-                if (e.player != em::player_name) continue;
+                if (e.player != name) {
+                    //std::cout << e.player << " " << name << "\n";
+                    continue;
+                } 
                 if (e.type == "jump") pressingJump = true;
                 if (e.type == "move_left") pressingLeft = true;
                 if (e.type == "move_right") pressingRight = true;

@@ -32,6 +32,10 @@ class event_pool {
             pool.clear();
         }
 
+        bool isEmpty() {
+            return pool.size() == 0;
+        }
+
         bool iter(event *e) {
             if (iterator == int(pool.size())) {
                 iterator = 0;
@@ -44,6 +48,8 @@ class event_pool {
             }
         }
 };
+
+sf::Packet prepareEventPacket(event_pool *ep);
 
 event_pool eventPool;
 
@@ -58,3 +64,34 @@ sf::Packet& operator >>(sf::Packet& packet, srvr::event &e)
 {
     return packet >> e.player >> e.type;
 }
+
+sf::Packet& operator <<(sf::Packet& packet, srvr::event_pool &ep)
+{
+    srvr::event i;
+    while (ep.iter(&i)) {
+        packet << i;
+    }
+
+    return packet;
+}
+
+sf::Packet& operator >>(sf::Packet& packet, srvr::event_pool &ep)
+{
+    srvr::event e;
+    while (!packet.endOfPacket()) {
+        packet >> e;
+        ep.dump(&e);
+    }
+    return packet;
+}
+
+
+namespace srvr {
+
+sf::Packet prepareEventPacket(srvr::event_pool *ep) {
+    sf::Packet p;
+    p << (*ep);
+    return p;
+}
+
+};

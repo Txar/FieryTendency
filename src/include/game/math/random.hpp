@@ -15,9 +15,9 @@ void genSeed() {
 }
 
 int frandint() {
-
+    return 0;
 }
 
 int frand() {
-    
+    return 0;
 }
