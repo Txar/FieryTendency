@@ -1,4 +1,4 @@
-#include "SFML/graphics.hpp"
+#include "SFML/Graphics.hpp"
 #include "game/io/events.hpp"
 #include "game/world/entity.hpp"
 #include "game/world/block.hpp"

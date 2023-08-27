@@ -1,7 +1,7 @@
 CC=g++
 BN=FieryTendency#build name
 CFLAGS=-O3 -Wall
-INCLUDEPATH =-I./src/include/
+INCLUDEPATH =-I ./src/include
 UNAME_S := $(shell uname -s)
 SRC = $(wildcard ./src/*.cpp)
 all: game
@@ -38,4 +38,4 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 install_lib:
-	sudo cp ./src/so/*.so /usr/lib/
+	sudo cp ./src/so/* /usr/lib/
