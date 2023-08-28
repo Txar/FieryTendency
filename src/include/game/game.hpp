@@ -31,6 +31,7 @@ class game {
             
 
             sf::Clock clock;
+            sf::Clock real_clock;
             float second_timer = 0;
 
             int mode;
@@ -45,6 +46,10 @@ class game {
 
             w.summonPlayer();
             w.summonPlayer();
+
+            unsigned short responsePort;
+            sf::Packet response;
+            sf::IpAddress responseIP;
 
             if (mode == 0) {
                 if (socket.bind(port) != sf::Socket::Done) {
@@ -69,7 +74,9 @@ class game {
                 std::cout << srvr::eventPool.pool.size() << "\n";
             }
 
+
             clock.restart();
+            real_clock.restart();
             while (running) {
                 delta_time = clock.restart().asSeconds();
                 second_timer += delta_time;
@@ -90,55 +97,59 @@ class game {
                 //    }
                 //}
 
-                em::updateGlobalEvents();
 
+                w.resetCamera();
 
                 screen_mgr.clear();
 
                 screen_mgr.draw_blocks(w.block_mgr.tilemap); //needs optimization obviously
                 screen_mgr.drawEntities(&w.alive_entity_mgr.entities, draw_colliders);
 
-                w.resetCamera();
-                
-                if (mode == 0) {
-                    unsigned short responsePort;
-                    sf::Packet response;
-                    sf::IpAddress responseIP;
-                    if (socket.receive(response, responseIP, responsePort) == sf::Socket::Done) {
-                        srvr::event_pool ep;
-                        response >> ep;
-                        srvr::event i;
-                        while (ep.iter(&i)) {
-                            //std::cout << "TEST2 " << i.type << " " << i.player << "\n";
-                            if (i.type == "CONNECTED") print(i.player + " has connected.");
-                            else srvr::eventPool.dump(&i);
-                        }
-                    }
-
-                } else if (mode == 1) {
-                    if (!srvr::eventPool.isEmpty()) {
-                        sf::Packet p = srvr::prepareEventPacket(&srvr::eventPool);
-                        std::cout << sizeof(p);
-                        socket.send(p, address, port);
-                    }
-
-                    unsigned short responsePort;
-                    sf::Packet response;
-                    sf::IpAddress responseIP;
+                {
+                    float real_delta = real_clock.restart().asSeconds();
+                    em::updateGlobalEvents();
                     
-                    if (socket.receive(response, responseIP, responsePort) == sf::Socket::Done) {
-                        srvr::event_pool ep;
-                        response >> ep;
+                    if (mode == 0) {
+                        if (socket.receive(response, responseIP, responsePort) == sf::Socket::Done) {
+                            srvr::event_pool ep;
+                            response >> ep;
+                            srvr::event i;
+                            while (ep.iter(&i)) {
+                                //std::cout << "TEST2 " << i.type << " " << i.player << "\n";
+                                if (i.type == "CONNECTED") print(i.player + " has connected.");
+                                else srvr::eventPool.dump(&i);
+                            }
 
-                        srvr::event i;
-                        while (ep.iter(&i)) {
-                            srvr::eventPool.dump(&i);
+                            sf::Packet p;
+
+                            socket.send(p, responseIP, responsePort);
                         }
-                    }
 
-                } else return -1;
+                    } else if (mode == 1) {
+                        if (!srvr::eventPool.isEmpty()) {
+                            sf::Packet p = srvr::prepareEventPacket(&srvr::eventPool);
+                            std::cout << sizeof(p);
+                            socket.send(p, address, port);
+                        }
 
-                w.update(delta_time, fps);
+                        unsigned short responsePort;
+                        sf::Packet response;
+                        sf::IpAddress responseIP;
+                        
+                        if (socket.receive(response, responseIP, responsePort) == sf::Socket::Done) {
+                            srvr::event_pool ep;
+                            response >> ep;
+
+                            srvr::event i;
+                            while (ep.iter(&i)) {
+                                srvr::eventPool.dump(&i);
+                            }
+                        }
+
+                    } else return -1;
+
+                    w.update(delta_time, fps);
+                }
 
                 running = screen_mgr.update();
             }

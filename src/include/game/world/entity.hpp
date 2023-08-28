@@ -18,6 +18,10 @@ namespace wrld {
 
 class entity {
     public:
+        void actOnEvents() {
+            
+        }
+
         entity(std::string _name, int _width, int _height, float weight = 1.0, std::string _type = "entity") {
             name = _name;
             width = _width;

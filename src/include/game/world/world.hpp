@@ -105,6 +105,13 @@ class world {
             block_mgr.update(delta_time);
         }
 
+        void actOnEvents() {
+            entity *e;
+            while (alive_entity_mgr.iter(&e)) {
+                e->actOnEvents();
+            }
+        }
+
         void resetCamera() {
             wrld::camera_center = {float(alive_entity_mgr.get_ptr(em::player_name)->x), 
                                    float(alive_entity_mgr.get_ptr(em::player_name)->y)};

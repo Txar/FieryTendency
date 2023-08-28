@@ -31,6 +31,10 @@ class box_entity : public entity {
         }
 
     public:
+        void actOnEvents() {
+            
+        }
+
         bool leftCollider, rightCollider, topCollider, bottomCollider;
         bool doApplyMovement = false;
 

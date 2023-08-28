@@ -10,6 +10,8 @@
 
 class player_entity : public box_entity {
     protected:
+
+    public:
         void actOnEvents() {
             srvr::event e;
             pressingRight = false, pressingLeft = false, pressingJump = false;
@@ -23,8 +25,7 @@ class player_entity : public box_entity {
                 if (e.type == "move_right") pressingRight = true;
             }
         }
-
-    public:
+        
         bool holdingJump = false, justJumped = false, running = false;
         bool pressingRight = false, pressingLeft = false, pressingJump = false;
         bool facingLeft = false;
@@ -52,7 +53,7 @@ class player_entity : public box_entity {
 
         virtual void update(float delta_time) {
             box_entity::update(delta_time);
-            actOnEvents();
+
             //std::cout << velocity.x << std::endl;
             if (abs(velocity.x) > 0.0) {
                 animators.at(0).speed = capAt(std::fabs(velocity.x) * delta_time * 16, 8.0);
